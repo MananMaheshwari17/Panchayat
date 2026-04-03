@@ -53,20 +53,58 @@ const gameState = {
         { type: 'Urban',     icon: '🏢', percent: 20, color: '#9C27B0' }
     ],
     nextId: 5,
-    selectedCategory: 'education'
+    selectedPopupOptions: []
 };
+
+// ── Popup Manifesto Options (predefined choices) ──
+const popupManifestoOptions = [
+    {
+        id: 'water',
+        icon: '💧',
+        title: 'Clean Water Initiative',
+        desc: 'Enormorss nio to soust edmcational education and labor-naries.',
+        category: 'health'
+    },
+    {
+        id: 'agri',
+        icon: '🌾',
+        title: 'Agricultural Subsidies',
+        desc: 'Growth growling to economic growth and growerlies and growth.',
+        category: 'economy'
+    },
+    {
+        id: 'women',
+        icon: '👩',
+        title: "Women's Empowerment",
+        desc: 'Empower women\'s fine staus of women in femms ts women.',
+        category: 'defense'
+    },
+    {
+        id: 'digital',
+        icon: '💻',
+        title: 'Digital Literacy',
+        desc: 'Creater a digital Literacy and morps computer education.',
+        category: 'education'
+    },
+    {
+        id: 'transport',
+        icon: '🚌',
+        title: 'Public Transport',
+        desc: 'Provides bus transport a public transport to consored.',
+        category: 'infra'
+    }
+];
 
 // ── DOM References ──
 const DOM = {
     manifestoList: document.getElementById('manifestoList'),
     barChart: document.getElementById('barChart'),
     addManifestoBtn: document.getElementById('addManifestoBtn'),
-    modalOverlay: document.getElementById('modalOverlay'),
-    modalClose: document.getElementById('modalClose'),
-    promiseTitle: document.getElementById('promiseTitle'),
-    promiseDesc: document.getElementById('promiseDesc'),
-    categoryPicker: document.getElementById('categoryPicker'),
-    submitPromise: document.getElementById('submitPromise'),
+    popupOverlay: document.getElementById('popupOverlay'),
+    popupCloseBtn: document.getElementById('popupCloseBtn'),
+    popupScrollArea: document.getElementById('popupScrollArea'),
+    customManifestoInput: document.getElementById('customManifestoInput'),
+    popupActionBtn: document.getElementById('popupActionBtn'),
     toast: document.getElementById('toast'),
     toastMsg: document.getElementById('toastMsg'),
     coinCount: document.getElementById('coinCount'),
@@ -78,6 +116,7 @@ const DOM = {
 function init() {
     renderManifesto();
     renderBarChart();
+    renderPopupOptions();
     bindEvents();
 }
 
@@ -85,7 +124,7 @@ function init() {
 function renderManifesto() {
     DOM.manifestoList.innerHTML = '';
 
-    gameState.manifesto.forEach((item, index) => {
+    gameState.manifesto.forEach((item) => {
         const el = document.createElement('div');
         el.className = 'manifesto-item';
 
@@ -105,7 +144,6 @@ function renderManifesto() {
 
 // ── Render Bar Chart ──
 function renderBarChart() {
-    // Generate the bars + axis + labels based on design
     DOM.barChart.innerHTML = '';
 
     // Axis line
@@ -117,7 +155,7 @@ function renderBarChart() {
         const group = document.createElement('div');
         group.className = 'bar-group';
 
-        const barHeight = Math.max(voter.percent, 10); // visually a minimum height
+        const barHeight = Math.max(voter.percent, 10);
 
         group.innerHTML = `
             <div class="bar-track">
@@ -134,54 +172,123 @@ function renderBarChart() {
     });
 }
 
+// ── Render Popup Manifesto Options ──
+function renderPopupOptions() {
+    DOM.popupScrollArea.innerHTML = '';
+    gameState.selectedPopupOptions = [];
+
+    popupManifestoOptions.forEach((option) => {
+        const card = document.createElement('div');
+        card.className = 'popup-option-card';
+        card.dataset.optionId = option.id;
+
+        card.innerHTML = `
+            <div class="popup-option-icon">${option.icon}</div>
+            <div class="popup-option-info">
+                <div class="popup-option-title">${option.title}</div>
+                <div class="popup-option-desc">${option.desc}</div>
+            </div>
+        `;
+
+        // Toggle selection on click
+        card.addEventListener('click', () => {
+            card.classList.toggle('selected');
+            const idx = gameState.selectedPopupOptions.indexOf(option.id);
+            if (idx > -1) {
+                gameState.selectedPopupOptions.splice(idx, 1);
+            } else {
+                gameState.selectedPopupOptions.push(option.id);
+            }
+        });
+
+        DOM.popupScrollArea.appendChild(card);
+    });
+}
+
 // ── Event Bindings ──
 function bindEvents() {
-    DOM.addManifestoBtn.addEventListener('click', () => {
-        DOM.modalOverlay.classList.add('active');
-        DOM.promiseTitle.value = '';
-        DOM.promiseDesc.value = '';
-        DOM.promiseTitle.focus();
+    // Open popup
+    DOM.addManifestoBtn.addEventListener('click', openPopup);
+
+    // Close popup
+    DOM.popupCloseBtn.addEventListener('click', closePopup);
+    DOM.popupOverlay.addEventListener('click', (e) => {
+        if (e.target === DOM.popupOverlay) closePopup();
     });
 
-    DOM.modalClose.addEventListener('click', closeModal);
-    DOM.modalOverlay.addEventListener('click', (e) => {
-        if (e.target === DOM.modalOverlay) closeModal();
+    // Keyboard: Escape closes popup
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && DOM.popupOverlay.classList.contains('active')) {
+            closePopup();
+        }
     });
 
-    DOM.categoryPicker.addEventListener('click', (e) => {
-        const btn = e.target.closest('.cat-btn');
-        if (!btn) return;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        gameState.selectedCategory = btn.dataset.cat;
-    });
-
-    DOM.submitPromise.addEventListener('click', addNewPromise);
+    // Add to Campaign
+    DOM.popupActionBtn.addEventListener('click', addToCampaign);
 }
 
-function addNewPromise() {
-    const title = DOM.promiseTitle.value.trim();
-    const desc = DOM.promiseDesc.value.trim();
-    if (!title) return;
+function openPopup() {
+    // Reset state
+    renderPopupOptions();
+    DOM.customManifestoInput.value = '';
 
-    const activeBtn = document.querySelector('.cat-btn.active');
-    
-    gameState.manifesto.push({
-        id: gameState.nextId++,
-        title,
-        desc: desc || 'A promise to the people.',
-        category: gameState.selectedCategory,
-        icon: activeBtn.dataset.icon,
-        color: '#8D6E63'
-    });
-    
-    renderManifesto();
-    closeModal();
-    showToast('🎉', 'Manifesto added!');
+    // Show
+    DOM.popupOverlay.classList.add('active');
 }
 
-function closeModal() {
-    DOM.modalOverlay.classList.remove('active');
+function closePopup() {
+    DOM.popupOverlay.classList.remove('active');
+}
+
+function addToCampaign() {
+    const customText = DOM.customManifestoInput.value.trim();
+    let addedCount = 0;
+
+    // Add selected predefined options
+    gameState.selectedPopupOptions.forEach((optId) => {
+        const option = popupManifestoOptions.find(o => o.id === optId);
+        if (option) {
+            // Check if already in manifesto
+            const alreadyExists = gameState.manifesto.some(m => m.title === option.title);
+            if (!alreadyExists) {
+                gameState.manifesto.push({
+                    id: gameState.nextId++,
+                    title: option.title,
+                    desc: option.desc,
+                    category: option.category,
+                    icon: option.icon,
+                    color: '#8D6E63'
+                });
+                addedCount++;
+            }
+        }
+    });
+
+    // Add custom manifesto if provided
+    if (customText) {
+        gameState.manifesto.push({
+            id: gameState.nextId++,
+            title: customText,
+            desc: 'A custom promise to the people.',
+            category: 'custom',
+            icon: '📜',
+            color: '#8D6E63'
+        });
+        addedCount++;
+    }
+
+    if (addedCount > 0) {
+        renderManifesto();
+        closePopup();
+        showToast('🎉', `${addedCount} manifesto${addedCount > 1 ? 's' : ''} added!`);
+    } else if (gameState.selectedPopupOptions.length === 0 && !customText) {
+        // Nothing selected — subtle feedback
+        DOM.popupActionBtn.style.animation = 'shake 0.4s ease';
+        setTimeout(() => DOM.popupActionBtn.style.animation = '', 400);
+    } else {
+        closePopup();
+        showToast('ℹ️', 'Already in your manifesto!');
+    }
 }
 
 function showToast(icon, msg) {

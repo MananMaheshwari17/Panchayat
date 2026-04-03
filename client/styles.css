@@ -360,13 +360,22 @@ html, body {
 }
 
 /* ═════════════════════════════════
-   CONTENT PANEL
+   TWO-PANEL LAYOUT
    ═════════════════════════════════ */
-.content-panel {
+
+/* Row container for the two panels */
+.panels-row {
     flex: 1;
     display: flex;
+    gap: 16px;
+    max-width: 900px;
+    min-height: 0; /* allow flex shrink */
+}
+
+/* Each individual panel card */
+.panel-card {
+    display: flex;
     flex-direction: column;
-    max-width: 800px;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     border: 4px solid var(--wood-dark);
@@ -376,64 +385,49 @@ html, body {
     overflow: hidden;
 }
 
-/* Tab Headers */
-.tab-headers {
+/* Sizing: manifesto narrower, demographics wider */
+.manifesto-panel { flex: 0.9; }
+.demographics-panel { flex: 1.1; }
+
+/* Panel header (replaces old tab-headers) */
+.panel-card-header {
     display: flex;
+    align-items: center;
+    justify-content: center;
     height: 40px;
     background: rgba(0,0,0,0.2);
     border-bottom: 2px solid var(--wood-dark);
 }
 
-.tab-header {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.panel-card-title {
     font-family: 'Fredoka', sans-serif;
     font-weight: 700;
     font-size: 18px;
-    color: rgba(255,255,255,0.7);
+    color: #FFF;
     text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
 }
-.tab-header.active {
-    color: #FFF;
-    background: rgba(255,255,255,0.1);
-}
 
-/* Internal panel */
-.panel-body {
+/* Panel body (parchment interior) */
+.panel-card-body {
     flex: 1;
     display: flex;
-    gap: 0;
     background: url('assets/parchment_texture.png?v=2') center/cover;
     background-color: var(--parchment);
     margin: 4px;
     border-radius: 8px;
     border: 2px solid rgba(0,0,0,0.2);
     box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    min-height: 0;
 }
 
 /* ── Manifesto Column ── */
 .manifesto-column {
-    flex: 0.9;
+    flex: 1;
     display: flex;
     flex-direction: column;
     padding: 16px 12px;
-    border-right: 3px solid #B8894A;
     overflow-y: auto;
     position: relative;
-}
-
-/* Vertical divider shadow */
-.manifesto-column::after {
-    content: '';
-    position: absolute;
-    right: -6px;
-    top: 10px;
-    bottom: 10px;
-    width: 3px;
-    background: rgba(139,94,60,0.15);
-    border-radius: 2px;
 }
 .manifesto-column::-webkit-scrollbar { width: 8px; }
 .manifesto-column::-webkit-scrollbar-track { background: transparent; }
@@ -505,6 +499,7 @@ html, body {
     display: flex;
     flex-direction: column;
     padding: 16px;
+    min-height: 0;
 }
 
 .bar-chart {
@@ -637,110 +632,287 @@ html, body {
 }
 
 /* ═════════════════════════════════
-   MODAL
+   MANIFESTO POPUP
    ═════════════════════════════════ */
-.modal-overlay {
+
+/* Overlay with dim + blur */
+.popup-overlay {
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
 }
-.modal-overlay.active { opacity: 1; pointer-events: all; }
-
-.modal-box {
-    width: 400px;
-    background: url('assets/parchment_texture.png?v=2') center/cover;
-    background-color: var(--parchment);
-    border: 4px solid var(--wood-dark);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    overflow: hidden;
-    transform: scale(0.95);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.modal-overlay.active .modal-box { transform: scale(1); }
-
-.modal-header {
-    background: url('assets/wood_texture.png?v=2') center/cover;
-    padding: 12px 16px;
-    border-bottom: 3px solid var(--wood-dark);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.popup-overlay.active {
+    opacity: 1;
+    pointer-events: all;
 }
 
-.modal-title {
-    font-family: 'Lilita One', cursive;
-    font-size: 18px;
-    color: #FFF;
-    text-shadow: 1px 2px 0 rgba(0,0,0,0.5);
-}
-
-.modal-close {
-    background: transparent;
-    border: none;
-    color: #FFF;
-    font-size: 18px;
-    cursor: pointer;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
-}
-
-.modal-body {
-    padding: 16px;
+/* Wooden panel container */
+.popup-panel {
+    position: relative;
+    width: min(48%, 560px);
+    max-height: 70vh;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-}
-
-.form-group { display: flex; flex-direction: column; gap: 4px; }
-.game-label { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; color: #5C3A1E; }
-.game-input, .game-textarea {
-    padding: 8px 12px;
-    border: 2px solid #8B5E3C;
-    border-radius: 6px;
-    background: rgba(255,255,255,0.7);
-    font-family: 'Fredoka', sans-serif;
-    font-size: 14px;
-    outline: none;
-}
-.game-input:focus, .game-textarea:focus { border-color: #D4A85C; }
-.game-textarea { resize: vertical; min-height: 60px; }
-
-.category-picker { display: flex; flex-wrap: wrap; gap: 6px; }
-.cat-btn {
-    padding: 4px 10px;
-    border: 2px solid #8B5E3C;
-    background: rgba(255,255,255,0.5);
+    background: url('assets/wood_texture.png?v=2') center/cover;
+    background-color: var(--wood-panel);
+    border: 6px solid var(--wood-dark);
     border-radius: 16px;
-    font-family: 'Fredoka', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    color: #5C3A1E;
+    box-shadow:
+        inset 0 0 12px rgba(0,0,0,0.25),
+        0 0 0 3px rgba(139,94,60,0.5),
+        0 12px 40px rgba(0,0,0,0.6);
+    padding: 20px;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                opacity 0.3s ease;
 }
-.cat-btn.active { background: #FFD700; border-color: #D4A800; color: #2C1810; }
+.popup-overlay.active .popup-panel {
+    transform: scale(1);
+    opacity: 1;
+}
 
-.submit-btn {
-    background: linear-gradient(180deg, #7CD33B, #58A020);
-    border: 2px solid #3A7A1A;
-    border-radius: 6px;
-    padding: 10px;
+/* Inner parchment glow */
+.popup-panel::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 2px solid rgba(212,168,92,0.35);
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Close Button (circular wooden) ── */
+.popup-close-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #A16738, #71421E);
+    border: 3px solid var(--wood-dark);
     color: #FFF;
     font-family: 'Fredoka', sans-serif;
-    font-weight: 700;
     font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 0 #2A5A10;
-    margin-top: 8px;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    box-shadow: 0 3px 0 #3A200A, 0 4px 8px rgba(0,0,0,0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
 }
-.submit-btn:active { transform: translateY(4px); box-shadow: none; }
+.popup-close-btn:hover {
+    transform: scale(1.08);
+}
+.popup-close-btn:active {
+    transform: translateY(3px) scale(1);
+    box-shadow: 0 0 0 #3A200A;
+}
+
+/* ── Scrollable Options List ── */
+.popup-scroll-area {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 2px;
+    margin-bottom: 12px;
+    max-height: calc(70vh - 160px);
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.popup-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+.popup-scroll-area::-webkit-scrollbar-track {
+    background: rgba(139,94,60,0.15);
+    border-radius: 4px;
+}
+.popup-scroll-area::-webkit-scrollbar-thumb {
+    background: var(--wood-mid);
+    border-radius: 4px;
+    border: 1px solid var(--wood-dark);
+}
+
+/* ── Individual Option Card (parchment strip) ── */
+.popup-option-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: linear-gradient(180deg, #F8EDDA, #EED7AE);
+    border: 2px solid #A87D4E;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.popup-option-card:last-child {
+    margin-bottom: 0;
+}
+
+/* Left & right scroll-roll caps */
+.popup-option-card::before,
+.popup-option-card::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 10px;
+    background: linear-gradient(90deg, #B8894A, #FFF5E1 30%, #D4A85C 70%, #8B5E3C);
+    border: 2px solid #5C3A1E;
+    border-radius: 5px;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.15);
+}
+.popup-option-card::before { left: -10px; }
+.popup-option-card::after  { right: -10px; }
+
+/* Hover & selected states */
+.popup-option-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border-color: #D4A85C;
+}
+.popup-option-card.selected {
+    border-color: var(--green-btn);
+    box-shadow: 0 0 0 2px rgba(92,179,56,0.3), 0 4px 10px rgba(0,0,0,0.2);
+    background: linear-gradient(180deg, #F0F8E0, #E0F0C0);
+}
+
+/* Option icon */
+.popup-option-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 8px;
+    border: 2px solid rgba(139,94,60,0.25);
+}
+
+/* Option text */
+.popup-option-info {
+    flex: 1;
+    min-width: 0;
+}
+.popup-option-title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #2C1810;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+.popup-option-desc {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    color: #5C3A1E;
+    line-height: 1.3;
+}
+
+/* ── Custom Input Section ── */
+.popup-custom-input {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: linear-gradient(180deg, #F8EDDA, #EED7AE);
+    border: 2px solid #A87D4E;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+.custom-input-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+}
+.custom-manifesto-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    color: #2C1810;
+    resize: none;
+    min-height: 44px;
+    line-height: 1.4;
+}
+.custom-manifesto-textarea::placeholder {
+    color: #8B7355;
+    font-style: italic;
+}
+
+/* ── Action Button: "Add to Campaign" ── */
+.popup-action-btn {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(180deg, #7CD33B 0%, #58A020 50%, #4A9020 100%);
+    border: 3px solid #3A7A1A;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow:
+        0 5px 0 #2A5A10,
+        0 8px 16px rgba(0,0,0,0.35),
+        inset 0 2px 0 rgba(255,255,255,0.3);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+/* Inner glossy highlight */
+.popup-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    right: 6px;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+    border-radius: 6px 6px 50% 50%;
+    pointer-events: none;
+}
+.popup-action-btn:active {
+    transform: translateY(5px);
+    box-shadow:
+        0 0px 0 #2A5A10,
+        0 2px 8px rgba(0,0,0,0.35),
+        inset 0 2px 0 rgba(255,255,255,0.3);
+}
+.popup-action-text {
+    font-family: 'Lilita One', cursive;
+    font-size: 22px;
+    color: #FFF;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    letter-spacing: 1px;
+}
 
 /* ═════════════════════════════════
    TOAST
@@ -766,3 +938,22 @@ html, body {
     z-index: 200;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ═════════════════════════════════
+   ANIMATIONS
+   ═════════════════════════════════ */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-4px); }
+}
+
+/* ═════════════════════════════════
+   RESPONSIVE: Popup on smaller screens
+   ═════════════════════════════════ */
+@media (max-width: 900px) {
+    .popup-panel {
+        width: min(90%, 440px);
+    }
+}

@@ -76,31 +76,38 @@
             </div>
         </section>
 
-        <!-- BOTTOM CONTENT PANEL -->
-        <section class="content-panel" id="contentPanel">
-            <!-- Tab headers -->
-            <div class="tab-headers">
-                <div class="tab-header active" data-tab="manifesto">Manifesto</div>
-                <div class="tab-header" data-tab="demographics">Voter Demographics</div>
-            </div>
+        <!-- BOTTOM CONTENT – Two separate panels -->
+        <div class="panels-row">
 
-            <!-- Panel body – two columns side by side -->
-            <div class="panel-body">
-                <!-- LEFT: Manifesto list -->
-                <div class="manifesto-column" id="manifestoColumn">
-                    <div class="manifesto-list" id="manifestoList">
-                        <!-- Items rendered by JS -->
+            <!-- LEFT PANEL: Manifesto -->
+            <section class="panel-card manifesto-panel" id="manifestoPanel">
+                <div class="panel-card-header">
+                    <span class="panel-card-title">Manifesto</span>
+                </div>
+                <div class="panel-card-body">
+                    <div class="manifesto-column" id="manifestoColumn">
+                        <div class="manifesto-list" id="manifestoList">
+                            <!-- Items rendered by JS -->
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- RIGHT: Voter Demographics chart -->
-                <div class="demographics-column" id="demographicsColumn">
-                    <div class="bar-chart" id="barChart">
-                        <!-- Bars rendered by JS -->
+            <!-- RIGHT PANEL: Voter Demographics -->
+            <section class="panel-card demographics-panel" id="demographicsPanel">
+                <div class="panel-card-header">
+                    <span class="panel-card-title">Voter Demographics</span>
+                </div>
+                <div class="panel-card-body">
+                    <div class="demographics-column" id="demographicsColumn">
+                        <div class="bar-chart" id="barChart">
+                            <!-- Bars rendered by JS -->
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+        </div>
 
         <!-- ADD MANIFESTO BUTTON (bottom-right) -->
         <button class="add-manifesto-btn" id="addManifestoBtn">
@@ -109,37 +116,27 @@
         </button>
     </main>
 
-    <!-- ═══ ADD MANIFESTO MODAL ═══ -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-box" id="modalBox">
-            <div class="modal-header">
-                <h2 class="modal-title">📝 New Manifesto Promise</h2>
-                <button class="modal-close" id="modalClose">✕</button>
+    <!-- ═══ ADD MANIFESTO POPUP ═══ -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-panel" id="popupPanel">
+            <!-- Close Button -->
+            <button class="popup-close-btn" id="popupCloseBtn">✕</button>
+
+            <!-- Scrollable Manifesto Options -->
+            <div class="popup-scroll-area" id="popupScrollArea">
+                <!-- Option cards rendered by JS -->
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="game-label">Promise Title</label>
-                    <input type="text" class="game-input" id="promiseTitle" placeholder="e.g., Free Education for All">
-                </div>
-                <div class="form-group">
-                    <label class="game-label">Description</label>
-                    <textarea class="game-textarea" id="promiseDesc" placeholder="Describe your promise..." rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="game-label">Category</label>
-                    <div class="category-picker" id="categoryPicker">
-                        <button class="cat-btn active" data-cat="education" data-icon="📚" data-color="#4CAF50">📚 Education</button>
-                        <button class="cat-btn" data-cat="economy" data-icon="📈" data-color="#FF9800">📈 Economy</button>
-                        <button class="cat-btn" data-cat="health" data-icon="🏥" data-color="#E91E63">🏥 Health</button>
-                        <button class="cat-btn" data-cat="defense" data-icon="🛡️" data-color="#607D8B">🛡️ Defense</button>
-                        <button class="cat-btn" data-cat="infra" data-icon="🏗️" data-color="#9C27B0">🏗️ Infrastructure</button>
-                    </div>
-                </div>
-                <button class="game-btn submit-btn" id="submitPromise">
-                    <span>✅</span>
-                    <span>Add to Manifesto</span>
-                </button>
+
+            <!-- Custom Input Section -->
+            <div class="popup-custom-input">
+                <div class="custom-input-icon">🪶</div>
+                <textarea class="custom-manifesto-textarea" id="customManifestoInput" placeholder="Write your own manifesto…" rows="2"></textarea>
             </div>
+
+            <!-- Add to Campaign Button -->
+            <button class="popup-action-btn" id="popupActionBtn">
+                <span class="popup-action-text">Add to Campaign</span>
+            </button>
         </div>
     </div>
 
