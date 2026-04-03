@@ -1,0 +1,3 @@
+"""
+Panchayat Bridge — Package Init
+"""

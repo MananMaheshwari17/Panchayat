@@ -1,0 +1,377 @@
+{
+  "dharma_rakshak": {
+    "candidate_name": "Pt. Vedprakash Shastri",
+    "party": "Sanskriti Seva Dal",
+    "tagline": "Sanskriti hi Shakti hai — Culture is Power",
+    "policies": [
+      {
+        "id": "dr_agri_01",
+        "title": "Gau-Krishi Samriddhi Yojana",
+        "category": "agriculture",
+        "description": "Establish cow-based organic farming cooperatives in every village. Provide free desi cow breeds, gobar-gas plants, and organic certification. Ban chemical fertilizers within 5 years.",
+        "promise_to_voters": "Every farmer will earn ₹50,000/year extra from organic premium + cow by-products.",
+        "ideology_impact": {
+          "economy": -10,
+          "social_progress": -5,
+          "environment": 20,
+          "technology": -15,
+          "defense": 0,
+          "welfare": 10,
+          "governance_reform": -5,
+          "cultural_identity": 20
+        }
+      },
+      {
+        "id": "dr_tech_01",
+        "title": "Vedic Vidya Digital Pathshala",
+        "category": "technology",
+        "description": "Replace Western-style education with a 'Gurukul 2.0' model. Digitize ancient Indian texts and make them mandatory curriculum. Create AI tutors that teach in Sanskrit.",
+        "promise_to_voters": "Our children will learn both coding and the Vedas. No more cultural confusion.",
+        "ideology_impact": {
+          "economy": -5,
+          "social_progress": -15,
+          "environment": 0,
+          "technology": 5,
+          "defense": 0,
+          "welfare": 5,
+          "governance_reform": -10,
+          "cultural_identity": 25
+        }
+      },
+      {
+        "id": "dr_economy_01",
+        "title": "Swadeshi Bazaar Protection Act",
+        "category": "economy",
+        "description": "Impose 200% import tax on foreign consumer goods. Create 'Swadeshi Certification' for local products with tax benefits. Ban FDI in retail and agriculture.",
+        "promise_to_voters": "Every rupee you spend will stay in Bharat. No more Amazon destroying our shops.",
+        "ideology_impact": {
+          "economy": -20,
+          "social_progress": -5,
+          "environment": 5,
+          "technology": -10,
+          "defense": 10,
+          "welfare": 5,
+          "governance_reform": -5,
+          "cultural_identity": 20
+        }
+      },
+      {
+        "id": "dr_welfare_01",
+        "title": "Ganga-Yamuna Jal Seva",
+        "category": "social_welfare",
+        "description": "Massive river rejuvenation project combining temple restoration with water conservation. Every village within 50km of a river gets free irrigation from traditional check-dams.",
+        "promise_to_voters": "Clean rivers, full wells, and prosperous temples. Our ancestors' water wisdom will save us.",
+        "ideology_impact": {
+          "economy": -5,
+          "social_progress": 5,
+          "environment": 25,
+          "technology": -5,
+          "defense": 0,
+          "welfare": 15,
+          "governance_reform": 0,
+          "cultural_identity": 15
+        }
+      },
+      {
+        "id": "dr_governance_01",
+        "title": "Panchayat Purnarjivan — Reviving Village Republics",
+        "category": "governance",
+        "description": "Transfer 50% of district budget directly to Gram Sabhas. Restore the ancient Panchayat system where the village council has judicial, executive, and financial powers.",
+        "promise_to_voters": "The village will be its own king. No more begging Delhi for permission.",
+        "ideology_impact": {
+          "economy": -5,
+          "social_progress": -10,
+          "environment": 5,
+          "technology": -5,
+          "defense": -5,
+          "welfare": 10,
+          "governance_reform": 20,
+          "cultural_identity": 15
+        }
+      }
+    ]
+  },
+  "vikas_purush": {
+    "candidate_name": "Arjun Mehra",
+    "party": "Digital Bharat Front",
+    "tagline": "Data-Driven Governance, Zero Corruption",
+    "policies": [
+      {
+        "id": "vp_tech_01",
+        "title": "Smart Gram 2.0 — One App, All Services",
+        "category": "technology",
+        "description": "Deploy a single super-app for all government services: ration card, land records, health booking, complaint filing. Every panchayat gets free Wi-Fi and a digital kiosk.",
+        "promise_to_voters": "Never stand in a queue again. Everything on your phone in 30 seconds.",
+        "ideology_impact": {
+          "economy": 10,
+          "social_progress": 10,
+          "environment": 0,
+          "technology": 25,
+          "defense": 0,
+          "welfare": 5,
+          "governance_reform": 20,
+          "cultural_identity": -5
+        }
+      },
+      {
+        "id": "vp_economy_01",
+        "title": "District Startup Launchpad",
+        "category": "economy",
+        "description": "Zero-tax SEZ for startups in every district HQ. ₹10 lakh seed grant for any registered startup. Partnership with IITs for mentorship.",
+        "promise_to_voters": "Don't migrate to Bengaluru — build the next unicorn from your own district.",
+        "ideology_impact": {
+          "economy": 25,
+          "social_progress": 10,
+          "environment": -5,
+          "technology": 20,
+          "defense": 0,
+          "welfare": -5,
+          "governance_reform": 15,
+          "cultural_identity": -10
+        }
+      },
+      {
+        "id": "vp_agri_01",
+        "title": "Precision Agriculture Data Grid",
+        "category": "agriculture",
+        "description": "Satellite-monitored crop health + drone-based pesticide spraying + AI-predicted market prices sent via SMS. Farmers get real-time advisory in their language.",
+        "promise_to_voters": "Your phone will tell you exactly when to sow, when to spray, and where to sell for the best price.",
+        "ideology_impact": {
+          "economy": 10,
+          "social_progress": 5,
+          "environment": 10,
+          "technology": 25,
+          "defense": 0,
+          "welfare": 5,
+          "governance_reform": 5,
+          "cultural_identity": -10
+        }
+      },
+      {
+        "id": "vp_governance_01",
+        "title": "Blockchain Panchayat Ledger",
+        "category": "governance",
+        "description": "Every rupee of panchayat budget tracked on a public blockchain. Real-time dashboard showing fund allocation, contractor payments, and project progress.",
+        "promise_to_voters": "Zero corruption. Every citizen can audit every paisa spent from their phone.",
+        "ideology_impact": {
+          "economy": 5,
+          "social_progress": 10,
+          "environment": 0,
+          "technology": 20,
+          "defense": 0,
+          "welfare": 0,
+          "governance_reform": 25,
+          "cultural_identity": -5
+        }
+      },
+      {
+        "id": "vp_welfare_01",
+        "title": "HealthStack — AI Telemedicine for Every Village",
+        "category": "social_welfare",
+        "description": "AI-powered telemedicine kiosks in every sub-center. Patients consult specialist doctors via video, get digital prescriptions, and receive medicines via drone delivery.",
+        "promise_to_voters": "An AIIMS-level doctor consultation for every villager, free of cost.",
+        "ideology_impact": {
+          "economy": 5,
+          "social_progress": 15,
+          "environment": 0,
+          "technology": 25,
+          "defense": 0,
+          "welfare": 15,
+          "governance_reform": 10,
+          "cultural_identity": -5
+        }
+      }
+    ]
+  },
+  "jan_neta": {
+    "candidate_name": "Comrade Meera Devi Yadav",
+    "party": "Samta Shakti Morcha",
+    "tagline": "Zameen, Roti, Izzat — Land, Bread, Dignity",
+    "policies": [
+      {
+        "id": "jn_welfare_01",
+        "title": "MNREGA Plus — 200 Days of Guaranteed Work",
+        "category": "social_welfare",
+        "description": "Expand MNREGA from 100 to 200 days. Raise daily wage to match state minimum wage. Priority for women, Dalits, and tribal workers. Include skilled work categories.",
+        "promise_to_voters": "No family will go hungry. 200 days of dignified work is your RIGHT, not charity.",
+        "ideology_impact": {
+          "economy": -15,
+          "social_progress": 20,
+          "environment": 5,
+          "technology": -5,
+          "defense": 0,
+          "welfare": 25,
+          "governance_reform": 5,
+          "cultural_identity": 5
+        }
+      },
+      {
+        "id": "jn_agri_01",
+        "title": "Bhumi Adhikar — Land to the Tiller",
+        "category": "agriculture",
+        "description": "Redistribute all land above 10 acres to landless laborers. Cancel all land lease agreements with corporates. Community ownership of common lands (grazing, forests).",
+        "promise_to_voters": "If you plow the land, you own the land. No more working on someone else's field.",
+        "ideology_impact": {
+          "economy": -25,
+          "social_progress": 25,
+          "environment": 10,
+          "technology": -5,
+          "defense": 0,
+          "welfare": 20,
+          "governance_reform": 15,
+          "cultural_identity": 5
+        }
+      },
+      {
+        "id": "jn_economy_01",
+        "title": "Corporate Tax Doubling + Worker Profit Share",
+        "category": "economy",
+        "description": "Double corporate tax for companies operating in the district. Mandate 20% profit sharing with workers. Create worker cooperatives for all government-contracted projects.",
+        "promise_to_voters": "The rich have looted enough. Now workers will get their fair share.",
+        "ideology_impact": {
+          "economy": -25,
+          "social_progress": 20,
+          "environment": 0,
+          "technology": -10,
+          "defense": 0,
+          "welfare": 20,
+          "governance_reform": 10,
+          "cultural_identity": 0
+        }
+      },
+      {
+        "id": "jn_governance_01",
+        "title": "Janta Darbar — Weekly Open Courts",
+        "category": "governance",
+        "description": "Mandatory weekly public hearings where officials must answer citizen complaints. Citizen juries can impose fines on corrupt officials. Community veto power on all projects above ₹1 crore.",
+        "promise_to_voters": "Every babu will answer to you, face to face, every week. No more hiding behind files.",
+        "ideology_impact": {
+          "economy": -5,
+          "social_progress": 15,
+          "environment": 0,
+          "technology": -5,
+          "defense": 0,
+          "welfare": 10,
+          "governance_reform": 25,
+          "cultural_identity": 5
+        }
+      },
+      {
+        "id": "jn_tech_01",
+        "title": "Community Radio + Free Data for All",
+        "category": "technology",
+        "description": "Establish community-owned radio stations in every block. Provide 5GB free mobile data per family per month. Ban corporate media from local spectrum.",
+        "promise_to_voters": "Your voice will be heard. Free internet and your own radio station run by the village.",
+        "ideology_impact": {
+          "economy": -10,
+          "social_progress": 15,
+          "environment": 0,
+          "technology": 10,
+          "defense": 0,
+          "welfare": 15,
+          "governance_reform": 10,
+          "cultural_identity": 5
+        }
+      }
+    ]
+  },
+  "mukti_devi": {
+    "candidate_name": "Nandini Krishnamurthy",
+    "party": "Swatantra Vikas Party",
+    "tagline": "Prosperity Through Freedom, Growth Through Competition",
+    "policies": [
+      {
+        "id": "md_economy_01",
+        "title": "Panchayat Free Trade Zone",
+        "category": "economy",
+        "description": "Declare the entire panchayat area a free trade zone. Zero business registration fees, flat 10% tax, and single-window clearance for all investments above ₹1 lakh.",
+        "promise_to_voters": "Start a business in 24 hours with zero paperwork. Let your entrepreneurial spirit fly.",
+        "ideology_impact": {
+          "economy": 25,
+          "social_progress": -5,
+          "environment": -10,
+          "technology": 10,
+          "defense": 0,
+          "welfare": -15,
+          "governance_reform": 20,
+          "cultural_identity": -10
+        }
+      },
+      {
+        "id": "md_agri_01",
+        "title": "AgriMarket Liberalization — Let Farmers Sell Anywhere",
+        "category": "agriculture",
+        "description": "Abolish APMC mandi monopoly. Allow farmers to sell directly to any buyer, including international markets. Create an online commodity exchange for crops.",
+        "promise_to_voters": "You grew it, you decide where to sell it. No middleman will eat your profit.",
+        "ideology_impact": {
+          "economy": 25,
+          "social_progress": 5,
+          "environment": -5,
+          "technology": 10,
+          "defense": 0,
+          "welfare": -10,
+          "governance_reform": 15,
+          "cultural_identity": -10
+        }
+      },
+      {
+        "id": "md_welfare_01",
+        "title": "Direct Benefit Transfer — Cash, Not Schemes",
+        "category": "social_welfare",
+        "description": "Replace ALL subsidies (food, fertilizer, fuel, LPG) with a single monthly cash transfer of ₹3,000 per family. Let families decide how to spend it.",
+        "promise_to_voters": "No more ration shop corruption. Cash in your account every month. Your money, your choice.",
+        "ideology_impact": {
+          "economy": 15,
+          "social_progress": 5,
+          "environment": 0,
+          "technology": 5,
+          "defense": 0,
+          "welfare": -5,
+          "governance_reform": 20,
+          "cultural_identity": -5
+        }
+      },
+      {
+        "id": "md_tech_01",
+        "title": "PPP Tech Parks — India's Next Hyderabad",
+        "category": "technology",
+        "description": "Public-Private Partnership to build tech parks on unused government land. 50% land + utilities provided by govt, 50% investment by private companies. Tax holiday for 10 years.",
+        "promise_to_voters": "IT jobs won't stay in Hyderabad and Pune. We'll bring them to YOUR district.",
+        "ideology_impact": {
+          "economy": 25,
+          "social_progress": 5,
+          "environment": -15,
+          "technology": 20,
+          "defense": 0,
+          "welfare": -5,
+          "governance_reform": 10,
+          "cultural_identity": -10
+        }
+      },
+      {
+        "id": "md_governance_01",
+        "title": "Privatize to Prioritize — Efficient Services Act",
+        "category": "governance",
+        "description": "Outsource non-core government services (sanitation, water supply, road maintenance) to private companies via competitive bidding. Performance-linked contracts with citizen ratings.",
+        "promise_to_voters": "Private efficiency, public accountability. Your roads will actually get repaired.",
+        "ideology_impact": {
+          "economy": 20,
+          "social_progress": -5,
+          "environment": -5,
+          "technology": 10,
+          "defense": 0,
+          "welfare": -15,
+          "governance_reform": 20,
+          "cultural_identity": -5
+        }
+      }
+    ]
+  },
+  "meta": {
+    "version": "1.0.0",
+    "policies_per_candidate": 5,
+    "categories": ["agriculture", "technology", "economy", "social_welfare", "governance"],
+    "ideology_impact_range": [-25, 25],
+    "description": "Each candidate has 5 policy planks covering the 5 categories. ideology_impact shows how choosing this policy shifts the game state on the 8-axis model."
+  }
+}
