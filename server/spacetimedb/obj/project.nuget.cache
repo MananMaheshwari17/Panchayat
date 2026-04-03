@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "IAMz8tD+a5uv1hEVB+QY89VnmF6LqTU88mcxfCx9a0oCwt4lIdpH/aTaa8nOnYkDidSWe1jm0ld2yhYafWswew==",
+  "success": true,
+  "projectFilePath": "/home/avatar/Desktop/hackbyte/Panchayat/server/spacetimedb/StdbModule.csproj",
+  "expectedPackageFiles": [
+    "/home/avatar/.nuget/packages/microsoft.net.illink.tasks/8.0.25/microsoft.net.illink.tasks.8.0.25.nupkg.sha512",
+    "/home/avatar/.nuget/packages/spacetimedb.bsatn.runtime/2.1.0/spacetimedb.bsatn.runtime.2.1.0.nupkg.sha512",
+    "/home/avatar/.nuget/packages/spacetimedb.runtime/2.1.0/spacetimedb.runtime.2.1.0.nupkg.sha512",
+    "/home/avatar/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.25/microsoft.aspnetcore.app.ref.8.0.25.nupkg.sha512"
+  ],
+  "logs": []
+}
