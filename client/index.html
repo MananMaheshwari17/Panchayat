@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panchayat - A political simulator game where you build your manifesto and win elections">
+    <title>Panchayat - Political Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fredoka:wght@400;500;600;700&family=Lilita+One&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background -->
+    <div class="game-bg">
+        <div class="bg-layer"></div>
+    </div>
+
+    <!-- ═══ TOP BAR ═══ -->
+    <header class="topbar" id="topbar">
+        <div class="topbar-left">
+            <button class="hamburger-btn" id="menuBtn">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="topbar-title">PANCHAYAT</div>
+        </div>
+
+        <div class="topbar-center">
+            <div class="level-badge" id="levelBadge">
+                <div class="level-shield">
+                    <span class="level-text">LEVEL 1</span>
+                </div>
+                <div class="level-stars">
+                    <span class="lstar filled">★</span>
+                    <span class="lstar filled">★</span>
+                    <span class="lstar filled">★</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="coin-badge">
+                <span class="coin-icon">🪙</span>
+                <span class="coin-count" id="coinCount">1,250</span>
+            </div>
+            <button class="settings-btn" id="settingsBtn">⚙️</button>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="game-main">
+
+        <!-- CANDIDATE CARD (top-left) -->
+        <section class="candidate-card" id="candidateCard">
+            <div class="candidate-inner">
+                <div class="avatar-frame">
+                    <img src="assets/candidate_avatar.png?v=3" alt="Rajesh Kumar" class="avatar-img" id="candidateAvatar">
+                </div>
+                <div class="candidate-info">
+                    <h1 class="candidate-name" id="candidateName">Rajesh Kumar</h1>
+                    <div class="party-badge">
+                        <span class="party-flag">◎</span>
+                        <span class="party-name" id="candidateParty">Jan Seva Party</span>
+                    </div>
+                    <div class="popularity-row">
+                        <span class="pop-label">Popularity:</span>
+                        <div class="pop-stars">
+                            <span class="pstar filled">★</span>
+                            <span class="pstar filled">★</span>
+                            <span class="pstar">★</span>
+                            <span class="pstar">★</span>
+                            <span class="pstar">★</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOTTOM CONTENT PANEL -->
+        <section class="content-panel" id="contentPanel">
+            <!-- Tab headers -->
+            <div class="tab-headers">
+                <div class="tab-header active" data-tab="manifesto">Manifesto</div>
+                <div class="tab-header" data-tab="demographics">Voter Demographics</div>
+            </div>
+
+            <!-- Panel body – two columns side by side -->
+            <div class="panel-body">
+                <!-- LEFT: Manifesto list -->
+                <div class="manifesto-column" id="manifestoColumn">
+                    <div class="manifesto-list" id="manifestoList">
+                        <!-- Items rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- RIGHT: Voter Demographics chart -->
+                <div class="demographics-column" id="demographicsColumn">
+                    <div class="bar-chart" id="barChart">
+                        <!-- Bars rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADD MANIFESTO BUTTON (bottom-right) -->
+        <button class="add-manifesto-btn" id="addManifestoBtn">
+            <span class="btn-plus">✚</span>
+            <span class="btn-label">ADD MANIFESTO</span>
+        </button>
+    </main>
+
+    <!-- ═══ ADD MANIFESTO MODAL ═══ -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box" id="modalBox">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 New Manifesto Promise</h2>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="game-label">Promise Title</label>
+                    <input type="text" class="game-input" id="promiseTitle" placeholder="e.g., Free Education for All">
+                </div>
+                <div class="form-group">
+                    <label class="game-label">Description</label>
+                    <textarea class="game-textarea" id="promiseDesc" placeholder="Describe your promise..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="game-label">Category</label>
+                    <div class="category-picker" id="categoryPicker">
+                        <button class="cat-btn active" data-cat="education" data-icon="📚" data-color="#4CAF50">📚 Education</button>
+                        <button class="cat-btn" data-cat="economy" data-icon="📈" data-color="#FF9800">📈 Economy</button>
+                        <button class="cat-btn" data-cat="health" data-icon="🏥" data-color="#E91E63">🏥 Health</button>
+                        <button class="cat-btn" data-cat="defense" data-icon="🛡️" data-color="#607D8B">🛡️ Defense</button>
+                        <button class="cat-btn" data-cat="infra" data-icon="🏗️" data-color="#9C27B0">🏗️ Infrastructure</button>
+                    </div>
+                </div>
+                <button class="game-btn submit-btn" id="submitPromise">
+                    <span>✅</span>
+                    <span>Add to Manifesto</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">🎉</span>
+        <span class="toast-msg" id="toastMsg">Promise Added!</span>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
