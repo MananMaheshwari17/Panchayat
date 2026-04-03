@@ -2,7 +2,7 @@
 
 Panchayat AI is a highly interactive, 16-bit retro RPG-style political simulation framework powered by Generative AI. It allows users to simulate local Indian electoral dynamics (Panchayat) by participating in a turn-based manifesto selection process against a diverse cast of AI-driven opposing candidates.
 
-![Panchayat AI Gameplay](client/public/assets/gameplay.png)
+![Panchayat AI Gameplay](client/assets/gameplay.png)
 *A real-time 70-30 split-screen layout featuring dynamic pixel sprites, Server-Sent Events (SSE) streaming, and real-time AI dialogue.*
 
 ---
