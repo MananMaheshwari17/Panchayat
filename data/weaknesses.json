@@ -1,0 +1,196 @@
+{
+  "dharma_rakshak": [
+    {
+      "id": "dr_weak_01",
+      "title": "Temple Trust Fund Diversion",
+      "severity": 4,
+      "description": "An RTI reveals that ₹2.3 crore donated to Shastri ji's 'Dharma Raksha Trust' was used to buy a luxury SUV.  Temple donor lists show ghost entries.",
+      "evidence": "RTI document #MP/2023/4451, bank statements showing cash withdrawals, luxury vehicle registration in a relative's name.",
+      "affected_demographics": {
+        "kisan": -8,
+        "yuva": -5,
+        "vyapari": -10,
+        "sarkari": -3,
+        "gramin_nari": -7
+      },
+      "counter_narrative": "These are fabricated documents by anti-Hindu forces trying to defame our dharmic mission."
+    },
+    {
+      "id": "dr_weak_02",
+      "title": "Caste Discrimination in Cow Shelter",
+      "severity": 3,
+      "description": "Dalit workers at Shastri ji's model gaushala report being forced to use separate utensils and denied entry to the prayer area. Video evidence surfaces on social media.",
+      "evidence": "Viral video clip (47 seconds), testimony from 3 former workers, local journalist investigation.",
+      "affected_demographics": {
+        "kisan": -3,
+        "yuva": -12,
+        "vyapari": -2,
+        "sarkari": -5,
+        "gramin_nari": -8
+      },
+      "counter_narrative": "This is taken out of context. We follow traditional protocols that have existed for centuries."
+    },
+    {
+      "id": "dr_weak_03",
+      "title": "Anti-Science Curriculum Controversy",
+      "severity": 2,
+      "description": "Shastri ji's proposed 'Vedic Vidya' curriculum suggests replacing Darwin's evolution theory with Dashavatar theory and claims ancient India had nuclear weapons.",
+      "evidence": "Leaked curriculum document, expert committee dissent notes, UNESCO criticism cited in Indian Express.",
+      "affected_demographics": {
+        "kisan": -1,
+        "yuva": -15,
+        "vyapari": -3,
+        "sarkari": -8,
+        "gramin_nari": -2
+      },
+      "counter_narrative": "Western science has its limitations. Our rishis discovered these truths thousands of years ago."
+    }
+  ],
+  "vikas_purush": [
+    {
+      "id": "vp_weak_01",
+      "title": "FinTech Data Privacy Scandal",
+      "severity": 5,
+      "description": "Arjun's former fintech company 'PayGram' sold financial data of 3 lakh rural users to a Chinese ad-tech company. An ex-employee becomes whistleblower.",
+      "evidence": "Whistleblower affidavit, server logs showing data transfers to Beijing-based servers, RBI notice to PayGram.",
+      "affected_demographics": {
+        "kisan": -15,
+        "yuva": -10,
+        "vyapari": -12,
+        "sarkari": -8,
+        "gramin_nari": -15
+      },
+      "counter_narrative": "This was a vendor-side issue that we fixed within 48 hours. We published a full transparency report."
+    },
+    {
+      "id": "vp_weak_02",
+      "title": "Ghost Village Visits",
+      "severity": 3,
+      "description": "Investigation reveals that 12 of Arjun's '200 village visits' were staged photo-ops lasting under 30 minutes, with pre-arranged 'villagers' who were actually party workers.",
+      "evidence": "Geotagged photo timestamps, interviews with actual village residents who never saw him, party worker WhatsApp group screenshots.",
+      "affected_demographics": {
+        "kisan": -12,
+        "yuva": -5,
+        "vyapari": -3,
+        "sarkari": -4,
+        "gramin_nari": -10
+      },
+      "counter_narrative": "Some visits were shorter due to schedule constraints. The work we did in other villages speaks for itself."
+    },
+    {
+      "id": "vp_weak_03",
+      "title": "English-Only Town Halls",
+      "severity": 2,
+      "description": "Three consecutive town halls were conducted entirely in English with no Hindi translation. Viral clips show confused elderly farmers while Arjun explains 'blockchain governance'.",
+      "evidence": "Full town hall recordings, social media clips with 1M+ views, editorial in Dainik Bhaskar.",
+      "affected_demographics": {
+        "kisan": -8,
+        "yuva": -2,
+        "vyapari": -4,
+        "sarkari": -3,
+        "gramin_nari": -10
+      },
+      "counter_narrative": "I've started bilingual sessions and hired a full-time Hindi communications team."
+    }
+  ],
+  "jan_neta": [
+    {
+      "id": "jn_weak_01",
+      "title": "Protest Violence and Property Damage",
+      "severity": 4,
+      "description": "During the 'Roti Andolan', Meera Devi's supporters destroyed 15 government vehicles and set fire to a Block Development Office. Three police constables were injured.",
+      "evidence": "FIR #345/2022, CCTV footage, hospital records of injured constables, property damage assessment report.",
+      "affected_demographics": {
+        "kisan": -3,
+        "yuva": -8,
+        "vyapari": -15,
+        "sarkari": -18,
+        "gramin_nari": -5
+      },
+      "counter_narrative": "When the system is deaf, the people have a right to be heard. We condemn violence but understand frustration."
+    },
+    {
+      "id": "jn_weak_02",
+      "title": "Unfunded Mandate — Where's the Money?",
+      "severity": 3,
+      "description": "An economic analysis shows Meera Devi's promises (MNREGA 200 days + land redistribution + free healthcare) would cost ₹4,700 crore — 8x the district's entire budget. No funding plan exists.",
+      "evidence": "Independent analysis by NIPFP economists, published in Economic & Political Weekly, Meera Devi's manifesto vs. budget data comparison.",
+      "affected_demographics": {
+        "kisan": -2,
+        "yuva": -8,
+        "vyapari": -12,
+        "sarkari": -10,
+        "gramin_nari": -3
+      },
+      "counter_narrative": "Tax the rich, cut military spending, eliminate corruption — the money is there, they just don't want to share it."
+    },
+    {
+      "id": "jn_weak_03",
+      "title": "Anti-Business Rhetoric Kills Jobs",
+      "severity": 3,
+      "description": "After Meera Devi's rally threatening to 'shut down every factory that doesn't share profits', three planned investments (textile, food processing, solar) were withdrawn from the district.",
+      "evidence": "Company withdrawal letters, District Industrial Centre records, Collector's statement to press.",
+      "affected_demographics": {
+        "kisan": -5,
+        "yuva": -12,
+        "vyapari": -18,
+        "sarkari": -5,
+        "gramin_nari": -3
+      },
+      "counter_narrative": "Companies that run away from workers' rights are exactly the kind we don't want. Good riddance."
+    }
+  ],
+  "mukti_devi": [
+    {
+      "id": "md_weak_01",
+      "title": "MNC Think Tank Funding — Conflict of Interest",
+      "severity": 4,
+      "description": "Nandini's 'Pragati Foundation' received ₹5 crore from Monsanto, Reliance Retail, and Adani Ports — the same companies that would benefit from her deregulation policies.",
+      "evidence": "FCRA filing records, foundation annual report donor list, policy recommendation timeline matching donor interests.",
+      "affected_demographics": {
+        "kisan": -18,
+        "yuva": -8,
+        "vyapari": -5,
+        "sarkari": -6,
+        "gramin_nari": -15
+      },
+      "counter_narrative": "Research funding is standard practice globally. Our recommendations are evidence-based, not donor-driven."
+    },
+    {
+      "id": "md_weak_02",
+      "title": "MSP Abolition Paper",
+      "severity": 5,
+      "description": "A 2019 research paper authored by Nandini proposes 'phasing out MSP within 3 years and replacing it with market discovery prices.' Farmer unions circulate it widely.",
+      "evidence": "Published paper in Indian Journal of Agricultural Economics, Nandini's own authorship, specific quotes recommending MSP abolition.",
+      "affected_demographics": {
+        "kisan": -25,
+        "yuva": -5,
+        "vyapari": -3,
+        "sarkari": -4,
+        "gramin_nari": -12
+      },
+      "counter_narrative": "That paper was an academic exercise exploring all options. My actual policy is to reform MSP, not abolish it."
+    },
+    {
+      "id": "md_weak_03",
+      "title": "NRI Disconnect — 15 Years Abroad",
+      "severity": 2,
+      "description": "Opposition highlights that Nandini lived in Washington D.C. for 15 years, has an American green card (surrendered only last year), and her children study in a US university.",
+      "evidence": "Passport records, green card surrender certificate dated 11 months ago, university enrollment records.",
+      "affected_demographics": {
+        "kisan": -10,
+        "yuva": -3,
+        "vyapari": -2,
+        "sarkari": -5,
+        "gramin_nari": -8
+      },
+      "counter_narrative": "I went abroad to learn and came back to serve. Brain drain criticism is exactly why talent leaves India in the first place."
+    }
+  ],
+  "meta": {
+    "version": "1.0.0",
+    "severity_scale": "1 (minor embarrassment) to 5 (career-threatening scandal)",
+    "affected_demographics_range": "Negative values represent happiness point loss for each voter group when scandal is exposed",
+    "description": "Weaknesses are deployed as 'scandal cards' during gameplay. Each has a counter-narrative the AI can use to defend itself."
+  }
+}

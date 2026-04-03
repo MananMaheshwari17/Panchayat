@@ -1,0 +1,16 @@
+# ─── Panchayat — Full Stack Dependencies ─────────────────────────────────
+# Python 3.10+ required
+
+# Core LLM
+google-generativeai>=0.8.0
+langchain-google-genai>=2.1.0
+
+# LangChain Ecosystem
+langchain>=0.3.0
+langchain-core>=0.3.0
+langgraph>=0.2.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.0
+rich>=13.0

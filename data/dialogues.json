@@ -1,0 +1,95 @@
+{
+  "dharma_rakshak": {
+    "rally_speech": "भाइयों और बहनों! हमारे पूर्वजों ने इस धरती को अपने खून से सींचा है। चाणक्य ने कहा था — 'राज्य का प्रथम धर्म प्रजा की रक्षा है।' आज ये विदेशी कंपनियां, ये डिजिटल ठग, ये बाज़ार के दलाल हमारी संस्कृति को निगल रहे हैं। मैं Vedprakash Shastri — आपका सेवक — वचन देता हूँ: हमारी गायें, हमारे मंदिर, हमारे खेत पहले। बाकी सब बाद में। जय भारत माता!",
+    "rally_speech_en": "Brothers and sisters! Our ancestors nourished this land with their blood. Chanakya said — 'The first duty of the state is to protect its people.' Today, foreign companies, digital fraudsters, and market brokers are swallowing our culture. I, Vedprakash Shastri — your servant — promise: our cows, our temples, our fields come first. Everything else is secondary. Jai Bharat Mata!",
+    "attack_opponent": {
+      "vikas_purush": "Arjun ji ko gaon ka rasta bhi nahi pata. Unka 'Digital India' sirf Instagram pe hai. Asli Bharat mein bijli nahi hai, aur ye 5G ki baat karte hain!",
+      "jan_neta": "Meera Devi ka socialism zameen baantna jaanti hai, zameen ugaana nahi. Jab khet toote, tab kaun khilayega?",
+      "mukti_devi": "Nandini ji Washington se aai hain humein sikhane. Yahi toh samasyaa hai — Bharat ko Bharat waale chalayenge, World Bank waale nahi."
+    },
+    "defend_scandal": {
+      "religious_funding": "Dharm ki seva mein diya gaya daan koi scandal nahi hai. Ye wohi log hain jo mandir banane ko bhi corruption kehte hain.",
+      "exclusion": "Hum sabko saath lekar chalte hain. Par Bharat ki pehchaan uski sanskriti hai — isko protect karna baantna nahi hai."
+    },
+    "react_to_policy": {
+      "pro_agriculture": "Bahut achha! Kisan ki jai ho. Par ye organic hona chahiye — chemical farming ne zameen maar di hai.",
+      "pro_technology": "Technology theek hai, par pehle gaon mein bijli toh aane do. Bina neev ke mahal nahi bante.",
+      "pro_market": "Bazaar ko khula chhodna matlab gareebon ko bhediye ke saamne chhodna. Ye niti nahi, atyachaar hai.",
+      "pro_welfare": "Gareebon ki madad zaroor honi chahiye — par daan nahi, swaabhimaan se. Kaam do, bhikh nahi.",
+      "pro_reform": "Sudhar zaroor lao, par Bharat ki parampara ke anuroop. Angrezion ki naqal karna sudhar nahi hai."
+    },
+    "victory_speech": "Dharma ki vijay hui! Janta ne saabit kar diya ki Bharat ki aatma gaon mein basti hai, app mein nahi. Ab kaam shuru — pehle gau-seva, fir gram-seva!",
+    "defeat_speech": "Haar nahi maanenge. Dharma ka marg kathin hota hai par satya ki vijay nishchit hai. Hum agle baar aur mazbooti se aayenge."
+  },
+  "vikas_purush": {
+    "rally_speech": "Friends, the data is clear — 73% of our panchayat's problems can be solved with three things: connectivity, transparency, and skill. I'm not here to sell you dreams from some ancient textbook. I'm here with a plan — a 90-day action plan backed by data, and I'll put the dashboard live on Day 1 so you can track every promise. Let's disrupt the old politics. Let's 10x this panchayat!",
+    "rally_speech_en": "Friends, the data is clear — 73% of our panchayat's problems can be solved with three things: connectivity, transparency, and skill. I'm not here to sell you dreams from some ancient textbook. I'm here with a plan — a 90-day action plan backed by data, and I'll put the dashboard live on Day 1 so you can track every promise. Let's disrupt the old politics. Let's 10x this panchayat!",
+    "attack_opponent": {
+      "dharma_rakshak": "Shastri ji still thinks governance means reading the Arthashastra. I respect tradition, but you can't run a 2024 panchayat with a 300 BC playbook. Where's the data?",
+      "jan_neta": "Comrade Meera Devi wants to redistribute poverty instead of creating wealth. Every economist will tell you — you can't divide a pie that isn't growing.",
+      "mukti_devi": "Nandini ji's free market is great for Dalal Street. But I've actually built products for villages. She has PowerPoints, I have pilots."
+    },
+    "defend_scandal": {
+      "data_privacy": "We've addressed the data concerns transparently — published a full audit report. Unlike my opponents, our mistakes are documented, not buried.",
+      "disconnect": "I've spent 200+ days in villages in the last 2 years. My app has been used by 5 lakh farmers. I don't just visit villages — I build for them."
+    },
+    "react_to_policy": {
+      "pro_agriculture": "Good direction. But let's add a data layer — satellite monitoring, AI advisory, real-time price feeds. Farming needs to be smart, not just subsidized.",
+      "pro_technology": "Exactly what we need! This is the future. Let me suggest we also add a skills component — technology without training is just expensive furniture.",
+      "pro_market": "I'm pro-market, but with guardrails. Open markets + transparent regulation + digital payments = real freedom for small businesses.",
+      "pro_welfare": "Welfare should be targeted, not universal. Use Aadhaar + AI to identify who really needs help. Stop the leakage, not the spending.",
+      "pro_reform": "This is music to my ears. Reform is my core agenda. Let's add a public dashboard so citizens can track implementation in real-time."
+    },
+    "victory_speech": "The people have chosen progress over nostalgia. Thank you for trusting data over drama. Day 1 starts NOW — the governance dashboard goes live tonight. Let's build! 🚀",
+    "defeat_speech": "The data said it would be close, and it was. I respect the mandate. But the future is inevitable — we'll keep building, keep iterating. See you next election. Always be shipping!"
+  },
+  "jan_neta": {
+    "rally_speech": "साथियों! मैं Meera Devi — आपकी बेटी, आपकी बहन, MNREGA की मजदूर। मैंने अपने हाथों से सड़क बनाई है, अपने पैरों से 10,000 किमी चली हूँ। ये अमीर लोग आपको app दिखाते हैं — पर app से पेट नहीं भरता! ये संस्कृति की बात करते हैं — पर खाली पेट कौन सा संस्कार? मेरा वादा सीधा है — ज़मीन, रोटी, इज़्ज़त। कोई भूखा नहीं सोयेगा। कोई बेज़मीन नहीं रहेगा!",
+    "rally_speech_en": "Comrades! I am Meera Devi — your daughter, your sister, an MNREGA laborer. I have built roads with my own hands, walked 10,000 km on my own feet. These rich people show you apps — but apps don't fill stomachs! They talk about culture — but what culture on an empty belly? My promise is simple — land, bread, dignity. No one sleeps hungry. No one remains landless!",
+    "attack_opponent": {
+      "dharma_rakshak": "Shastri ji ke mandir mein garib ka pravesh nahi, par chanda zaroor chahiye. Unka dharm sirf ameer logon ka dharm hai.",
+      "vikas_purush": "Arjun bhai ka 5G aayega, par Kamla bai ke ghar mein ek bulb ki bijli nahi hai. Ye 'vikas' kiska hai? Ambani ka ya aapka?",
+      "mukti_devi": "Nandini ji kehti hain 'market decide karega.' Haan, market ne decide kiya hai — ameer aur ameer, garib aur garib. Yahi hai unka freedom."
+    },
+    "defend_scandal": {
+      "violence": "Jab sarkaar andhi ho jaaye, toh awaz uthani padti hai. Hum hinsa nahi karte — hum jawab dete hain. Asli hinsa toh bhukhmari hai.",
+      "no_funding_plan": "Paisa kahaan se aayega? Arre, 100 ameer logon ki ek saal ki kamaai se pure gaon ka pet bhar jayega. Tax lagao, loot band karo, paisa mil jayega."
+    },
+    "react_to_policy": {
+      "pro_agriculture": "Sahi disha! Par MSP guarantee chahiye, aur zameen ka batwara bhi. Bina zameen ke kisan kahaan kheti karega?",
+      "pro_technology": "Technology theek hai par pehle roti ka intezaam karo. Bhookhe pet koi coding nahi seekhta.",
+      "pro_market": "Bazaar khulega toh sabse pehle garib ki dukaan bandh hogi. Hum ye nahi hone denge. Pehle suraksha, phir vyapar.",
+      "pro_welfare": "Bahut achha! Par aur chahiye. 100 din nahi, 200 din ka kaam. Poori salary, koi kat-chhat nahi. Ye RIGHT hai!",
+      "pro_reform": "Reform hum bhi chahte hain — par neechle tabke ke liye. Ameer logon ke liye toh sab kuch 'reform' ho chuka hai."
+    },
+    "victory_speech": "Inquilab Zindabad! Janta ki jeet hui hai! Mehnat karne waalon ka raaj aayega! Pehla kaam — MNREGA 200 din, kal se shuru!",
+    "defeat_speech": "Haar gayi par haar nahi maani. Jab tak ek bhi bhookha insaan hai, humari ladai jaari rahegi. Lal salaam, saathiyon!"
+  },
+  "mukti_devi": {
+    "rally_speech": "Good evening, fellow citizens. Let me share three numbers with you: 6.7% — that's our district's GDP growth, half the national average. 43% — that's the share of our budget lost to subsidy leakage. ₹0 — that's the FDI our district attracted last year. Zero. These numbers aren't fate — they're the result of bad policy. I offer you a different model: one where entrepreneurs thrive, where markets are free, and where your talent — not your caste or connections — decides your success. Freedom works. Let's prove it.",
+    "rally_speech_en": "Good evening, fellow citizens. Let me share three numbers with you: 6.7% — that's our district's GDP growth, half the national average. 43% — that's the share of our budget lost to subsidy leakage. ₹0 — that's the FDI our district attracted last year. Zero. These numbers aren't fate — they're the result of bad policy. I offer you a different model: one where entrepreneurs thrive, where markets are free, and where your talent — not your caste or connections — decides your success. Freedom works. Let's prove it.",
+    "attack_opponent": {
+      "dharma_rakshak": "Mr. Shastri wants to ban imports and go back to the bullock cart economy. The 1991 reforms proved that protectionism is a path to poverty, not prosperity.",
+      "vikas_purush": "Arjun has the right instinct on tech, but wrong on economics. Tax-free zones for startups? That's just picking winners. Let the market decide — no special treatment.",
+      "jan_neta": "Comrade Meera's economics would make Venezuela look like Switzerland. You can't redistribute wealth you haven't created. Factories first, then fairness."
+    },
+    "defend_scandal": {
+      "corporate_funding": "My think tank is funded transparently — every donor is disclosed publicly. Unlike my opponents' mysterious cash donations, our books are open for audit.",
+      "elitism": "I grew up in a middle-class family in Chennai. Yes, I worked at the World Bank — to learn how economies succeed. I brought that knowledge home for India."
+    },
+    "react_to_policy": {
+      "pro_agriculture": "Supporting farmers is noble, but subsidies create dependency. Instead, free the farmer to sell anywhere, to anyone. Market access is the real empowerment.",
+      "pro_technology": "Excellent. Technology adoption drives productivity. But let the private sector lead — government tech projects have a 70% failure rate globally.",
+      "pro_market": "This is exactly right. Free, transparent, and competitive markets are the engine of prosperity. Remove barriers, and watch investment flow in.",
+      "pro_welfare": "Welfare should be a safety net, not a hammock. Replace all subsidies with direct cash transfers — let families decide what they need most.",
+      "pro_reform": "Reform is essential. But real reform means reducing government, not expanding it. Cut red tape, cut taxes, cut corruption — in that order."
+    },
+    "victory_speech": "The market — of ideas — has spoken. Thank you for choosing prosperity over populism. Tomorrow, I meet with investors. The free trade zone launch begins this week. Growth starts now.",
+    "defeat_speech": "Markets correct, and so will politics. The economic fundamentals don't change with election results. We'll continue advocating for freedom and growth. The numbers are on our side."
+  },
+  "meta": {
+    "version": "1.0.0",
+    "dialogue_types": ["rally_speech", "attack_opponent", "defend_scandal", "react_to_policy", "victory_speech", "defeat_speech"],
+    "description": "Dialogue templates for each candidate across common game scenarios. rally_speech is delivery in original language, attack/defend provide short punchy lines."
+  }
+}

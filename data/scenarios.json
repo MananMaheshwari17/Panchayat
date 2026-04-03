@@ -1,0 +1,338 @@
+{
+  "scenarios": [
+    {
+      "id": "scenario_farm_bills_2020",
+      "headline": "Farm Bills 2020 — The Three Contentious Laws",
+      "description": "The Indian government passes three farm bills allowing farmers to sell produce outside APMC mandis, enabling contract farming, and removing stock limits on essential commodities. Farmer unions launch year-long protests at Delhi borders, calling the laws 'death warrants' for MSP.",
+      "date_range": "2020-2021",
+      "category": "agriculture",
+      "source": "Historical — Farm Laws Repeal, Nov 2021",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "oppose", "score": -15, "reasoning": "Threatens small farmers and traditional mandi system. Seen as corporate takeover of agriculture."},
+        "vikas_purush": {"stance": "cautious_support", "score": 5, "reasoning": "Supports market reform in principle but recognizes implementation concerns."},
+        "jan_neta": {"stance": "strongly_oppose", "score": -25, "reasoning": "Viewed as neo-zamindari — handing farmer livelihoods to corporations."},
+        "mukti_devi": {"stance": "strongly_support", "score": 25, "reasoning": "Textbook market liberalization. Removing middlemen should increase farmer income."}
+      },
+      "affected_demographics": ["kisan", "vyapari", "gramin_nari"],
+      "policy_implications": ["msp_guarantee", "land_rights", "deregulation", "market_access"]
+    },
+    {
+      "id": "scenario_demonetization_2016",
+      "headline": "Demonetization — ₹500 and ₹1000 Notes Banned Overnight",
+      "description": "On November 8, 2016, the government invalidates 86% of India's currency in circulation. Stated goals: eliminate black money, push digital payments. Reality: massive cash crunch, 100+ deaths in bank queues, informal economy devastated.",
+      "date_range": "2016-2017",
+      "category": "economy",
+      "source": "Historical — Demonetization, Nov 2016",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 10, "reasoning": "Framed as a patriotic sacrifice. Supported the 'corruption cleanup' narrative."},
+        "vikas_purush": {"stance": "support", "score": 15, "reasoning": "Accelerated digital payment adoption. UPI usage skyrocketed post-demonetization."},
+        "jan_neta": {"stance": "strongly_oppose", "score": -25, "reasoning": "Devastated daily wage workers, small farmers, and informal sector. Rich found workarounds."},
+        "mukti_devi": {"stance": "oppose", "score": -10, "reasoning": "Massive supply shock. Bad economics — the rich use banks, not cash. Hurt MSMEs."}
+      },
+      "affected_demographics": ["kisan", "vyapari", "gramin_nari", "yuva"],
+      "policy_implications": ["digital_payments", "gst_tax_reform", "easy_credit_loans"]
+    },
+    {
+      "id": "scenario_digital_india_2015",
+      "headline": "Digital India — Broadband, Aadhaar, and UPI Revolution",
+      "description": "Government launches Digital India initiative aiming to connect all panchayats with broadband, digitize government services, and push Aadhaar-linked Direct Benefit Transfers. UPI processes 10 billion transactions/month by 2023.",
+      "date_range": "2015-2024",
+      "category": "technology",
+      "source": "Historical — Digital India programme",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "cautious", "score": -5, "reasoning": "Worried about cultural erosion through internet but appreciates Aadhaar for scheme delivery."},
+        "vikas_purush": {"stance": "strongly_support", "score": 25, "reasoning": "This IS the core vision. Digital infrastructure as the backbone of governance."},
+        "jan_neta": {"stance": "oppose", "score": -10, "reasoning": "Digital divide widens inequality. Aadhaar excludes the poorest who lack documents."},
+        "mukti_devi": {"stance": "support", "score": 15, "reasoning": "Reduces government overhead, eliminates middlemen in welfare delivery."}
+      },
+      "affected_demographics": ["yuva", "vyapari", "sarkari"],
+      "policy_implications": ["technology_access", "governance_transparency", "digital_payments"]
+    },
+    {
+      "id": "scenario_gst_rollout_2017",
+      "headline": "GST — One Nation, One Tax (and Endless Confusion)",
+      "description": "India replaces 17 indirect taxes with Goods and Services Tax. Initial chaos: multiple slabs (0%, 5%, 12%, 18%, 28%), complex filing, server crashes. Small businesses disproportionately affected. Simplified over years but trust damage done.",
+      "date_range": "2017-2024",
+      "category": "economy",
+      "source": "Historical — GST implementation, July 2017",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "oppose", "score": -10, "reasoning": "Hurt small traders and the informal economy. Too Western, too complex."},
+        "vikas_purush": {"stance": "support", "score": 15, "reasoning": "Unified tax system + digital compliance is exactly the modernization India needed."},
+        "jan_neta": {"stance": "oppose", "score": -15, "reasoning": "Regressive tax that treats luxury goods and essentials with insufficient difference."},
+        "mukti_devi": {"stance": "strongly_support", "score": 20, "reasoning": "Simplified tax system, widens the tax base, makes India globally competitive."}
+      },
+      "affected_demographics": ["vyapari", "kisan", "yuva"],
+      "policy_implications": ["gst_tax_reform", "deregulation", "easy_credit_loans"]
+    },
+    {
+      "id": "scenario_mnrega_expansion",
+      "headline": "MNREGA — Lifeline or Crutch?",
+      "description": "MNREGA guarantees 100 days of wage employment per household per year. During COVID, demand surged 40%. Debate: should it be expanded to 200 days (as demanded by opposition) or reformed with skill components?",
+      "date_range": "2006-2024",
+      "category": "social_welfare",
+      "source": "Historical — MNREGA debates",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "cautious_support", "score": 5, "reasoning": "Supports rural employment but wants it restructured around 'gram seva' (village service)."},
+        "vikas_purush": {"stance": "oppose", "score": -10, "reasoning": "Creates dependency. Replace with skill-based employment and digital job platforms."},
+        "jan_neta": {"stance": "strongly_support", "score": 25, "reasoning": "MNREGA is a fundamental right. Expand to 200 days, raise wages, include skilled work."},
+        "mukti_devi": {"stance": "strongly_oppose", "score": -20, "reasoning": "Massive fiscal drain. Replace with conditional cash transfers and free up labor markets."}
+      },
+      "affected_demographics": ["kisan", "gramin_nari", "yuva"],
+      "policy_implications": ["employment", "subsidies_loans", "governance_status_quo"]
+    },
+    {
+      "id": "scenario_nep_2020",
+      "headline": "National Education Policy 2020 — Ancient Meets Modern",
+      "description": "NEP introduces mother tongue instruction, multi-disciplinary education, coding from Class 6, and integration of vocational training. Controversial provisions include 'Indian Knowledge Systems' as a subject and autonomy for universities.",
+      "date_range": "2020-2024",
+      "category": "governance",
+      "source": "Historical — NEP 2020",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "strongly_support", "score": 20, "reasoning": "Finally! Indian knowledge systems, mother tongue, and cultural education get official status."},
+        "vikas_purush": {"stance": "support", "score": 15, "reasoning": "Coding in schools, multi-disciplinary approach, and vocational training are excellent."},
+        "jan_neta": {"stance": "cautious", "score": -5, "reasoning": "Good on paper but no plan for funding. English removal will hurt Dalit and OBC upward mobility."},
+        "mukti_devi": {"stance": "support", "score": 10, "reasoning": "University autonomy and skill-based education align with market needs."}
+      },
+      "affected_demographics": ["yuva", "sarkari", "gramin_nari"],
+      "policy_implications": ["education_skills", "education_children", "governance_reform"]
+    },
+    {
+      "id": "scenario_ops_vs_nps",
+      "headline": "Old Pension Scheme vs New Pension Scheme — The Great Retirement Battle",
+      "description": "Multiple state governments restore OPS (guaranteed pension) over NPS (market-linked pension). Fiscally risky but politically popular. Government employees become a decisive voting block.",
+      "date_range": "2022-2024",
+      "category": "governance",
+      "source": "Historical — OPS restoration movement",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 10, "reasoning": "Supports the 'seva' culture of government service. Workers deserve guaranteed retirement."},
+        "vikas_purush": {"stance": "oppose", "score": -15, "reasoning": "Fiscally unsustainable. Creates future liabilities that will bankrupt state budgets."},
+        "jan_neta": {"stance": "strongly_support", "score": 20, "reasoning": "Workers' earned right. Market-linked pensions gamble with people's retirement."},
+        "mukti_devi": {"stance": "strongly_oppose", "score": -25, "reasoning": "OPS would cost ₹800 crore over 30 years. Complete fiscal irresponsibility."}
+      },
+      "affected_demographics": ["sarkari", "yuva"],
+      "policy_implications": ["pension_security", "pay_commission", "job_security"]
+    },
+    {
+      "id": "scenario_ayushman_bharat",
+      "headline": "Ayushman Bharat — ₹5 Lakh Health Cover for the Poor",
+      "description": "World's largest health insurance scheme covers 50 crore citizens. Success: 5 crore+ hospital treatments. Challenges: hospital fraud, limited provider network in rural areas, quality concerns.",
+      "date_range": "2018-2024",
+      "category": "social_welfare",
+      "source": "Historical — PM-JAY scheme",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 10, "reasoning": "Good welfare scheme. Wants to add Ayurveda and Yoga as covered treatments."},
+        "vikas_purush": {"stance": "support", "score": 15, "reasoning": "Digital health records + insurance = perfect tech-welfare intersection."},
+        "jan_neta": {"stance": "cautious_support", "score": 5, "reasoning": "Good start but not enough. Demand universal healthcare as a right, not insurance."},
+        "mukti_devi": {"stance": "support", "score": 10, "reasoning": "Insurance-based model is better than government hospitals. Let private sector deliver."}
+      },
+      "affected_demographics": ["gramin_nari", "kisan", "yuva"],
+      "policy_implications": ["healthcare_maternal", "safety_security", "welfare"]
+    },
+    {
+      "id": "scenario_pm_kisan",
+      "headline": "PM-KISAN — ₹6,000/Year Direct Transfer to Farmers",
+      "description": "Government transfers ₹6,000/year in three installments to all landholding farmer families. Reaches 11 crore beneficiaries. Criticism: amount too small, excludes tenant farmers and landless laborers.",
+      "date_range": "2019-2024",
+      "category": "agriculture",
+      "source": "Historical — PM-KISAN Samman Nidhi",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 10, "reasoning": "Direct support to farmers is good. But should also include cow-keeping families."},
+        "vikas_purush": {"stance": "support", "score": 10, "reasoning": "DBT model is efficient. Should add a digital component for soil health advisories."},
+        "jan_neta": {"stance": "cautious", "score": -5, "reasoning": "Too little. ₹6,000/year is ₹16/day — an insult. Excludes landless laborers who need it most."},
+        "mukti_devi": {"stance": "strongly_support", "score": 20, "reasoning": "Replace all subsidies with this model. Direct cash > leaky schemes. Increase the amount."}
+      },
+      "affected_demographics": ["kisan", "gramin_nari"],
+      "policy_implications": ["subsidies_loans", "msp_guarantee", "welfare"]
+    },
+    {
+      "id": "scenario_internet_shutdowns",
+      "headline": "India Leads World in Internet Shutdowns — 2023 Record",
+      "description": "India imposed 116 internet shutdowns in 2023, the most in the world. Reasons: protests, exams, communal tension. Cost: $1.9 billion in economic losses. Youth and businesses hit hardest.",
+      "date_range": "2020-2024",
+      "category": "technology",
+      "source": "Historical — Internet Freedom Foundation reports",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 5, "reasoning": "Internet shutdowns are sometimes necessary to maintain order and prevent fake news riots."},
+        "vikas_purush": {"stance": "strongly_oppose", "score": -25, "reasoning": "Internet is infrastructure. Shutting it down is like blocking roads. Costs billions in productivity."},
+        "jan_neta": {"stance": "oppose", "score": -10, "reasoning": "Shutdowns suppress dissent and protest. People have a right to communicate."},
+        "mukti_devi": {"stance": "oppose", "score": -15, "reasoning": "Massive economic damage. Businesses can't function. India's reputation as a tech hub suffers."}
+      },
+      "affected_demographics": ["yuva", "vyapari"],
+      "policy_implications": ["social_media_freedom", "technology_access", "law_and_order"]
+    },
+    {
+      "id": "scenario_ujjwala_lpg",
+      "headline": "Ujjwala Yojana — Free LPG for Rural Women",
+      "description": "Government provides free LPG connections to 10 crore BPL households. Initial success, but 40% of beneficiaries can't afford refills and revert to firewood. Highlights affordable access vs. initial access.",
+      "date_range": "2016-2024",
+      "category": "social_welfare",
+      "source": "Historical — PMUY scheme",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 10, "reasoning": "Protects women's health and reduces deforestation. Aligns with dharmic duty."},
+        "vikas_purush": {"stance": "support", "score": 10, "reasoning": "Good DBT model. Needs pricing reform to ensure sustained usage."},
+        "jan_neta": {"stance": "cautious", "score": 0, "reasoning": "Good idea, terrible execution. Free connection means nothing if refill costs ₹1,100."},
+        "mukti_devi": {"stance": "support", "score": 10, "reasoning": "Subsidy should be targeted to the poorest. Phase out for those who can afford it."}
+      },
+      "affected_demographics": ["gramin_nari", "kisan"],
+      "policy_implications": ["nutrition_food_security", "healthcare_maternal", "subsidies_loans"]
+    },
+    {
+      "id": "scenario_ethanol_blending",
+      "headline": "Ethanol Blending — Sugar to Fuel, Farmers to Factories",
+      "description": "Government mandates 20% ethanol blending in petrol by 2025. Sugarcane farmers benefit, but food security experts warn about diverting food crops to fuel. Water-intensive sugarcane strains water tables.",
+      "date_range": "2021-2024",
+      "category": "agriculture",
+      "source": "Historical — E20 biofuel policy",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "cautious", "score": 0, "reasoning": "Reduces oil imports (good for self-reliance) but might hurt food production (bad for farmers)."},
+        "vikas_purush": {"stance": "strongly_support", "score": 20, "reasoning": "Clean energy + farmer income diversification + import reduction = triple win."},
+        "jan_neta": {"stance": "oppose", "score": -15, "reasoning": "Growing fuel instead of food while people go hungry is morally criminal."},
+        "mukti_devi": {"stance": "support", "score": 15, "reasoning": "Market creates new revenue stream for farmers. Let demand and price signals decide."}
+      },
+      "affected_demographics": ["kisan", "vyapari", "gramin_nari"],
+      "policy_implications": ["water_irrigation", "msp_guarantee", "environment"]
+    },
+    {
+      "id": "scenario_shg_revolution",
+      "headline": "SHG Movement — 9 Crore Women in Self-Help Groups",
+      "description": "India's SHG movement becomes the world's largest, with 9 crore women members managing ₹1.5 lakh crore in savings. SHGs provide microfinance, skill training, and political voice. But loan recovery pressure and MFI exploitation remain concerns.",
+      "date_range": "2000-2024",
+      "category": "social_welfare",
+      "source": "Historical — NRLM/DAY-NRLM SHG programs",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "support", "score": 10, "reasoning": "Women organizing at village level aligns with Panchayat traditions."},
+        "vikas_purush": {"stance": "support", "score": 15, "reasoning": "SHGs + digital payments + financial literacy = financial inclusion at scale."},
+        "jan_neta": {"stance": "strongly_support", "score": 20, "reasoning": "Collective power of women against exploitation. Must be protected from MFI sharks."},
+        "mukti_devi": {"stance": "support", "score": 15, "reasoning": "Entrepreneurship at grassroots. Let SHGs graduate to formal businesses."}
+      },
+      "affected_demographics": ["gramin_nari", "kisan"],
+      "policy_implications": ["shg_microfinance", "easy_credit_loans", "safety_security"]
+    },
+    {
+      "id": "scenario_adani_hindenburg",
+      "headline": "Adani-Hindenburg Crisis — Crony Capitalism Debate Reignites",
+      "description": "Hindenburg Research accuses Adani Group of stock manipulation and fraud. Market crash wipes ₹12 lakh crore. Opposition demands investigation, government stays silent. Debate on corporate governance and crony capitalism becomes national.",
+      "date_range": "2023",
+      "category": "economy",
+      "source": "Historical — Hindenburg Report, Jan 2023",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "oppose_investigation", "score": 5, "reasoning": "Foreign attack on Indian business. Nationalistic defense of 'our entrepreneurs'."},
+        "vikas_purush": {"stance": "cautious", "score": -5, "reasoning": "Corporate governance is important but so is the startup ecosystem. Don't throw baby with bathwater."},
+        "jan_neta": {"stance": "strongly_support_investigation", "score": 20, "reasoning": "This is what we've been saying — the rich steal from the country and the poor pay."},
+        "mukti_devi": {"stance": "support_investigation", "score": -10, "reasoning": "Market integrity requires investigation. Crony capitalism is NOT free market capitalism."}
+      },
+      "affected_demographics": ["vyapari", "yuva", "kisan"],
+      "policy_implications": ["governance_transparency", "gst_tax_reform", "deregulation"]
+    },
+    {
+      "id": "scenario_caa_protests",
+      "headline": "CAA-NRC — Citizenship Laws Spark National Protests",
+      "description": "Citizenship Amendment Act fast-tracks citizenship for non-Muslim refugees from 3 countries. Combined with proposed NRC, triggers fears of Muslim exclusion. Massive protests across universities, Shaheen Bagh sit-in lasts 101 days.",
+      "date_range": "2019-2020",
+      "category": "governance",
+      "source": "Historical — CAA protests 2019-20",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "strongly_support", "score": 25, "reasoning": "Dharmic refugees deserve protection. This corrects a historical wrong of Partition."},
+        "vikas_purush": {"stance": "neutral", "score": -5, "reasoning": "Divisive issue that distracts from development. Wishes focus was on economics."},
+        "jan_neta": {"stance": "strongly_oppose", "score": -20, "reasoning": "Discriminatory law that undermines Constitutional secularism. Divides poor along religious lines."},
+        "mukti_devi": {"stance": "cautious_oppose", "score": -10, "reasoning": "Rule of law matters. Implementation concerns outweigh stated benefits."}
+      },
+      "affected_demographics": ["yuva", "sarkari", "gramin_nari"],
+      "policy_implications": ["social_media_freedom", "law_and_order", "governance_reform"]
+    },
+    {
+      "id": "scenario_drone_delivery",
+      "headline": "Drone Delivery — Medicine from the Sky",
+      "description": "Telangana and Meghalaya pilot drone delivery of medicines, vaccines, and blood samples to remote areas. Success rate: 98%, delivery time reduced from 6 hours to 15 minutes. But concerns about air rights, privacy, and job displacement.",
+      "date_range": "2022-2024",
+      "category": "technology",
+      "source": "Historical — Medicine from the Sky project",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "cautious", "score": 0, "reasoning": "Healthcare access is good but worried about surveillance and air sovereignty."},
+        "vikas_purush": {"stance": "strongly_support", "score": 25, "reasoning": "Perfect example of tech solving real problems. Scale this to every district."},
+        "jan_neta": {"stance": "cautious", "score": -5, "reasoning": "Drones can't replace proper PHCs with permanent staff. This is a band-aid."},
+        "mukti_devi": {"stance": "support", "score": 15, "reasoning": "Private sector innovation solving public sector failures. Let the market scale it."}
+      },
+      "affected_demographics": ["gramin_nari", "kisan", "yuva"],
+      "policy_implications": ["healthcare_maternal", "technology_access", "rural_infrastructure"]
+    },
+    {
+      "id": "scenario_stubble_burning",
+      "headline": "Stubble Burning — North India's Annual Air Emergency",
+      "description": "Punjab and Haryana farmers burn 20 million tonnes of paddy straw annually, causing Delhi's AQI to cross 500. Government offers subsidized machines but farmers say they're too expensive. Crop diversification discussed but not implemented.",
+      "date_range": "2017-2024",
+      "category": "agriculture",
+      "source": "Historical — paddy stubble crisis",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "cautious_support_farmers", "score": 5, "reasoning": "Farmers shouldn't be criminalized. Government must provide alternatives, not penalties."},
+        "vikas_purush": {"stance": "support_tech_solution", "score": 10, "reasoning": "Bio-decomposer tech + satellite monitoring + incentive-based compliance."},
+        "jan_neta": {"stance": "support_farmers", "score": 10, "reasoning": "Farmers burn straw because they can't afford alternatives. Subsidize the solutions fully."},
+        "mukti_devi": {"stance": "market_solution", "score": 5, "reasoning": "Create a market for crop residue: biofuel, paper pulp, mushroom cultivation. Incentivize, don't penalize."}
+      },
+      "affected_demographics": ["kisan", "yuva", "gramin_nari"],
+      "policy_implications": ["crop_insurance", "subsidies_loans", "environment"]
+    },
+    {
+      "id": "scenario_exam_paper_leak",
+      "headline": "NEET/SSC Paper Leaks — Youth Betrayed, Again",
+      "description": "Major competitive exam paper leaked affecting 2 crore+ students. Investigation reveals nexus of coaching centers, exam officials, and political operatives. Students protest across 10 states. Supreme Court intervenes.",
+      "date_range": "2024",
+      "category": "governance",
+      "source": "Historical — NEET-UG 2024 controversy",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "outrage", "score": -5, "reasoning": "Education corruption is morally indefensible. Demands return to traditional gurukul examination."},
+        "vikas_purush": {"stance": "strongly_oppose_corruption", "score": -10, "reasoning": "Digitize all exams. AI-proctored, blockchain-verified, zero human intervention."},
+        "jan_neta": {"stance": "strongly_oppose", "score": -15, "reasoning": "System designed to fail poor students. The rich can afford re-attempts, the poor can't."},
+        "mukti_devi": {"stance": "oppose_corruption", "score": -10, "reasoning": "Institutional failure. Outsource exam conduct to reputed international agencies."}
+      },
+      "affected_demographics": ["yuva", "sarkari", "gramin_nari"],
+      "policy_implications": ["education_skills", "governance_transparency", "employment"]
+    },
+    {
+      "id": "scenario_liquor_ban",
+      "headline": "State Liquor Bans — Women's Demand, Revenue Dilemma",
+      "description": "Bihar enforces total liquor ban in 2016. Domestic violence drops 30%, but spurious liquor deaths increase and state loses ₹4,000 crore in excise revenue. Other states study the model.",
+      "date_range": "2016-2024",
+      "category": "social_welfare",
+      "source": "Historical — Bihar prohibition",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "strongly_support", "score": 20, "reasoning": "Alcohol is adharma. It destroys families, temples, and moral fiber of society."},
+        "vikas_purush": {"stance": "oppose", "score": -10, "reasoning": "Prohibition doesn't work. Better: regulate, tax heavily, and fund de-addiction with the revenue."},
+        "jan_neta": {"stance": "support", "score": 15, "reasoning": "Women demanded it. Alcohol is how the rich keep the poor sedated and unorganized."},
+        "mukti_devi": {"stance": "strongly_oppose", "score": -20, "reasoning": "Prohibition is paternalistic, kills revenue, and creates black markets. Let individuals choose."}
+      },
+      "affected_demographics": ["gramin_nari", "kisan", "vyapari"],
+      "policy_implications": ["safety_security", "law_and_order", "nutrition_food_security"]
+    },
+    {
+      "id": "scenario_lateral_entry",
+      "headline": "Lateral Entry — Experts in Bureaucracy or Threat to Seniority?",
+      "description": "Government recruits private sector professionals directly into joint secretary positions. Supporters say it brings expertise; opponents (especially bureaucrats) say it undermines UPSC meritocracy and reservation provisions.",
+      "date_range": "2018-2024",
+      "category": "governance",
+      "source": "Historical — Lateral entry controversy",
+      "ideology_analysis": {
+        "dharma_rakshak": {"stance": "oppose", "score": -10, "reasoning": "UPSC system is a respected institution. Lateral entry brings outsiders who don't understand India."},
+        "vikas_purush": {"stance": "strongly_support", "score": 20, "reasoning": "Government needs domain experts. A career bureaucrat can't run digital infrastructure."},
+        "jan_neta": {"stance": "strongly_oppose", "score": -20, "reasoning": "Lateral entry bypasses reservation. It's a back door for upper-caste corporate types."},
+        "mukti_devi": {"stance": "support", "score": 15, "reasoning": "Merit-based recruitment should apply everywhere. Let the best person do the job."}
+      },
+      "affected_demographics": ["sarkari", "yuva"],
+      "policy_implications": ["job_security", "governance_reform", "employment"]
+    }
+  ],
+  "meta": {
+    "version": "1.0.0",
+    "total_scenarios": 20,
+    "categories": {
+      "agriculture": 4,
+      "economy": 3,
+      "technology": 3,
+      "social_welfare": 4,
+      "governance": 6
+    },
+    "date_range": "2006-2024",
+    "description": "Curated real Indian political/economic scenarios. Each scenario includes pre-computed ideology analysis for all 4 AI candidates and mapping to affected voter demographics. This replaces the n8n live-news pipeline for hackathon speed.",
+    "usage": "Search by category, affected_demographics, or ideology_analysis to find scenarios relevant to in-game actions."
+  }
+}
