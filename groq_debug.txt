@@ -1,0 +1,24 @@
+Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+Traceback (most recent call last):
+  File "/home/avatar/Desktop/hackbyte/Panchayat/server/fastapi_server.py", line 169, in end_turn
+    chat_completion = client.chat.completions.create(
+        messages=[
+    ...<5 lines>...
+        response_format={"type": "json_object"}
+    )
+  File "/home/avatar/Desktop/hackbyte/Panchayat/.venv/lib/python3.14/site-packages/groq/resources/chat/completions.py", line 461, in create
+    return self._post(
+           ~~~~~~~~~~^
+        "/openai/v1/chat/completions",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<45 lines>...
+        stream_cls=Stream[ChatCompletionChunk],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/avatar/Desktop/hackbyte/Panchayat/.venv/lib/python3.14/site-packages/groq/_base_client.py", line 1280, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/avatar/Desktop/hackbyte/Panchayat/.venv/lib/python3.14/site-packages/groq/_base_client.py", line 1067, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.BadRequestError: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}

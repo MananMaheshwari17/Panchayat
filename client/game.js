@@ -41,7 +41,7 @@ const gameState = {
     voterShares: [],       // Player's share per voter group (what bar chart shows)
     allShares: {},         // Full share table: { groupId: { candidateId: share } }
     npcManifestos: { 0: [], 1: [], 2: [], 3: [] },
-    turnNumber: 0,
+    turnNumber: 1,
     selectedPopupOptions: []
 };
 
@@ -79,7 +79,24 @@ const DOM = {
     turnAnnouncerOverlay: document.getElementById('turnAnnouncerOverlay'),
     announcerName: document.getElementById('announcerName'),
     announcerAction: document.getElementById('announcerAction'),
-    playerTotalShares: document.getElementById('playerTotalShares')
+    playerTotalShares: document.getElementById('playerTotalShares'),
+    roundTrackerText: document.getElementById('roundTrackerText'),
+    endGameOverlay: document.getElementById('endGameOverlay'),
+    endGameWinnerBox: document.getElementById('endGameWinnerBox'),
+    endGameSubtext: document.getElementById('endGameSubtext'),
+    endGameStandings: document.getElementById('endGameStandings'),
+    playAgainBtn: document.getElementById('playAgainBtn'),
+    sabotageBtn: document.getElementById('sabotageBtn'),
+    sabotageOverlay: document.getElementById('sabotageOverlay'),
+    sabotageCloseBtn: document.getElementById('sabotageCloseBtn'),
+    sabotageTargetSelect: document.getElementById('sabotageTargetSelect'),
+    sabotagePromptInput: document.getElementById('sabotagePromptInput'),
+    sabotageSubmitBtn: document.getElementById('sabotageSubmitBtn'),
+    sabotageResultOverlay: document.getElementById('sabotageResultOverlay'),
+    sabotageResultTitle: document.getElementById('sabotageResultTitle'),
+    sabotageResultMessage: document.getElementById('sabotageResultMessage'),
+    sabotageResultDialogue: document.getElementById('sabotageResultDialogue'),
+    sabotageResultCloseBtn: document.getElementById('sabotageResultCloseBtn')
 };
 
 
@@ -232,8 +249,21 @@ async function init() {
     if (!pName || !pParty) {
         pName = prompt("Enter your Candidate Name:", "Player") || "Player";
         pParty = prompt("Enter your Party Name:", "Jan Seva Party") || "Jan Seva Party";
+        let pSecret = prompt("Enter your Candidate's Dark Secret (Optional - Leave blank for default):");
+        
         localStorage.setItem('playerName', pName);
         localStorage.setItem('playerParty', pParty);
+        
+        if (pSecret && pSecret.trim() !== "") {
+            try {
+                // Background update without blocking UI
+                apiFetch('/api/set-player-weakness', {
+                    method: 'POST',
+                    body: { weakness_desc: pSecret.trim() },
+                    timeoutMs: 5000
+                }).catch(e => console.warn("Failed to set weakness", e));
+            } catch(e) {}
+        }
     }
     gameState.candidate.name = pName;
     gameState.candidate.party = pParty;
@@ -247,6 +277,14 @@ async function init() {
         localStorage.setItem('playerCoins', gameState.candidate.coins);
     }
     DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+
+    let savedTurn = localStorage.getItem('turnNumber');
+    gameState.turnNumber = savedTurn ? parseInt(savedTurn, 10) : 1;
+    if (gameState.turnNumber <= 5) {
+        DOM.roundTrackerText.textContent = `RND ${gameState.turnNumber}/5`;
+    } else {
+        DOM.roundTrackerText.textContent = `RND 5/5`;
+    }
 
     // Start pixel particles
     const particleSystem = new PixelParticleSystem(DOM.pixelCanvas);
@@ -271,6 +309,11 @@ async function init() {
     // Render UI
     renderManifesto();
     renderBarChart();
+    
+    // Evaluate if game already ended previously
+    if (gameState.turnNumber > 5) {
+        evaluateElectionResults();
+    }
 }
 
 /** Load all manifestos from /api/all-manifestos */
@@ -576,6 +619,7 @@ function bindEvents() {
         }
     });
     DOM.popupActionBtn.addEventListener('click', addToCampaign);
+    DOM.playAgainBtn.addEventListener('click', restartGameAction);
 
     // Hamburger → toggle opponents sidebar
     DOM.menuBtn.addEventListener('click', toggleSidebar);
@@ -605,7 +649,7 @@ function bindEvents() {
 
 async function restartGameAction() {
     try {
-        await apiFetch('/api/restart-game', { method: 'POST', timeoutMs: 15000 });
+        await apiFetch('/api/restart-game', { method: 'POST', timeoutMs: 30000 });
         showToast('🔄', 'Game Restarted!');
         localStorage.clear();
         // Reload page to reset coins and flush RAM state entirely
@@ -756,25 +800,45 @@ async function animateNpcTurns(npcActions) {
         
         DOM.announcerName.textContent = npc.name.toUpperCase();
         DOM.announcerName.style.color = npc.color;
-        DOM.announcerAction.textContent = "is thinking...";
         
-        await sleep(800); // Wait for suspense
-        
-        DOM.announcerAction.innerHTML = `Chose: <br><br> <span style="color:#fff; font-size:12px;">${action.title}</span> <br><br> <span style="color:#e04848">(+${action.shift_amount}% for ${getGroupName(action.group_id)})</span>`;
-        
-        // Save to NPC state memory for click-to-view feature
-        if (!gameState.npcManifestos[npc.id]) {
-            gameState.npcManifestos[npc.id] = [];
+        if (action.type === "manifesto" || !action.type) {
+            DOM.announcerAction.textContent = "is thinking...";
+            await sleep(800);
+            
+            DOM.announcerAction.innerHTML = `Chose: <br><br> <span style="color:#fff; font-size:12px;">${action.title}</span> <br><br> <span style="color:#e04848">(+${action.shift_amount}% for ${getGroupName(action.group_id)})</span>`;
+            
+            if (!gameState.npcManifestos[npc.id]) {
+                gameState.npcManifestos[npc.id] = [];
+            }
+            gameState.npcManifestos[npc.id].push({
+                id: action.manifesto_id,
+                title: action.title,
+                description: "(Opponent Campaign Promise)",
+                target_group_id: action.group_id,
+                shift_amount: action.shift_amount
+            });
+            await sleep(2500); 
+        } else if (action.type === "sabotage") {
+            let vicName = "Someone";
+            if (action.target_id === 4) vicName = "YOU";
+            else {
+                let vicData = NPC_CANDIDATES.find(n => n.id === action.target_id);
+                if (vicData) vicName = vicData.name;
+            }
+            
+            DOM.announcerAction.innerHTML = `<span style="color:#e04848; font-size:12px;">💣 launched SABOTAGE against ${vicName}!</span>`;
+            await sleep(1500);
+            
+            let sabText = `<br><span style="color:#999; font-style:italic; font-size:9px;">"${action.sabotage_text || ''}"</span><br><br>`;
+            
+            if (action.blocked) {
+                DOM.announcerAction.innerHTML += sabText + `<span style="color:#48b848; font-size:14px; font-weight:bold;">⚖️ BLOCKED!</span><br><span style="color:#888; font-size:9px;">Election Commissioner: ${action.reason || 'Code of conduct violation'}</span>`;
+            } else {
+                let damagePct = action.multiplier ? Math.round(action.multiplier * 100) : '??';
+                DOM.announcerAction.innerHTML += sabText + `<span style="color:#e04848; font-size:14px; font-weight:bold;">💥 SABOTAGE SUCCESS!</span><br><span style="color:#e8a040; font-size:9px;">${action.dialogue || ''}</span><br><span style="color:#e04848; font-size:8px;">${vicName} lost ${damagePct}% voter share!</span>`;
+            }
+            await sleep(4000);
         }
-        gameState.npcManifestos[npc.id].push({
-            id: action.manifesto_id,
-            title: action.title,
-            description: "(Opponent Campaign Promise)",
-            target_group_id: action.group_id,
-            shift_amount: action.shift_amount
-        });
-        
-        await sleep(2500); // Time to read before moving to next opponent
     }
     
     DOM.turnAnnouncerOverlay.classList.remove('active');
@@ -789,6 +853,20 @@ async function addToCampaign() {
     const customText = DOM.customManifestoInput.value.trim();
     let addedCount = 0;
     const apiSyncTasks = []; // Background API calls
+    
+    // Check if empty
+    if (gameState.selectedPopupOptions.length === 0 && !customText) {
+        DOM.popupActionBtn.style.animation = 'shake 0.4s ease-out';
+        setTimeout(() => DOM.popupActionBtn.style.animation = '', 400);
+        return;
+    }
+
+    // Check if enough coins
+    let pendingCount = gameState.selectedPopupOptions.length + (customText ? 1 : 0);
+    if (gameState.candidate.coins < pendingCount * 50) {
+        showToast('❌', 'Not enough coins!');
+        return;
+    }
 
     try {
         // Process selected manifesto bank options
@@ -870,17 +948,33 @@ async function addToCampaign() {
                 const npcRes = await apiFetch('/api/end-turn', { method: 'POST', timeoutMs: 15000 });
                 if (npcRes.npc_actions && npcRes.npc_actions.length > 0) {
                     await animateNpcTurns(npcRes.npc_actions);
-                    await loadVoterStanding();
-                    renderBarChart();
-                    renderOpponentsSidebar();
                 }
             } catch (err) {
                 console.error("NPC turn failed:", err);
             }
+            
+            // Re-sync UI state after ALL animations/errors
+            await loadVoterStanding();
+            renderBarChart();
+            renderOpponentsSidebar();
+            
+            // Gain round reward
+            gameState.candidate.coins += 25;
+            localStorage.setItem('playerCoins', gameState.candidate.coins);
+            DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+            setTimeout(() => showToast('🪙', 'Round End! +25 Coins Granted'), 500);
 
-        } else if (gameState.selectedPopupOptions.length === 0 && !customText) {
-            DOM.popupActionBtn.style.animation = 'shake 0.4s ease-out';
-            setTimeout(() => DOM.popupActionBtn.style.animation = '', 400);
+            // Track & evaluate turn limit
+            gameState.turnNumber++;
+            localStorage.setItem('turnNumber', gameState.turnNumber);
+            
+            if (gameState.turnNumber <= 5) {
+                DOM.roundTrackerText.textContent = `RND ${gameState.turnNumber}/5`;
+            } else {
+                DOM.roundTrackerText.textContent = `RND 5/5`;
+                setTimeout(() => evaluateElectionResults(), 1000);
+            }
+
         } else {
             closePopup();
             showToast('📋', 'Already in your manifesto!');
@@ -956,6 +1050,216 @@ function showToast(icon, msg) {
     DOM.toast.classList.add('show');
     setTimeout(() => DOM.toast.classList.remove('show'), 2000);
 }
+
+// ══════════════════════════════════
+//  ELECTION ENDGAME LOGIC
+// ══════════════════════════════════
+
+function evaluateElectionResults() {
+    const candidateTotals = []; 
+    
+    // NPCs (0 to 3) + Player (4)
+    for(let cid = 0; cid <= 4; cid++) {
+        let total = 0;
+        let maxGroup = 0;
+        if(cid === PLAYER_CANDIDATE_ID) {
+            gameState.voterShares.forEach(g => {
+                total += g.percent;
+                if(g.percent > maxGroup) maxGroup = g.percent;
+            });
+        } else {
+            VOTER_GROUPS.forEach(g => {
+                const s = gameState.allShares[g.id]?.[cid] ?? INITIAL_SHARE;
+                total += s;
+                if(s > maxGroup) maxGroup = s;
+            });
+        }
+        
+        let pName = cid === PLAYER_CANDIDATE_ID ? gameState.candidate.name + " (You)" : NPC_CANDIDATES.find(n=>n.id === cid).name;
+        
+        candidateTotals.push({
+            id: cid,
+            name: pName,
+            total: Math.round(total * 100) / 100,
+            maxGroup: Math.round(maxGroup * 100) / 100
+        });
+    }
+
+    // Sort by absolute highest total, tiebreak with highest peak
+    candidateTotals.sort((a, b) => {
+        if(b.total !== a.total) return b.total - a.total; 
+        return b.maxGroup - a.maxGroup; 
+    });
+
+    let winnerText = "";
+    let subText = "";
+    let boxColor = "";
+    
+    // Check coalition tie
+    if(candidateTotals[0].total === candidateTotals[1].total && candidateTotals[0].maxGroup === candidateTotals[1].maxGroup) {
+        let playerIsTied1st = candidateTotals[0].total === candidateTotals.find(c => c.id === PLAYER_CANDIDATE_ID).total && 
+                              candidateTotals[0].maxGroup === candidateTotals.find(c => c.id === PLAYER_CANDIDATE_ID).maxGroup;
+        
+        if (playerIsTied1st) {
+             winnerText = "SABKA SAATH SABKA VIKAS";
+             subText = "Coalition Government! You tied for first place.";
+             boxColor = "#a0a0f0";
+        } else {
+             winnerText = "DEFEATED";
+             subText = `${candidateTotals[0].name.replace(" (You)", "")} led a coalition against you!`;
+             boxColor = "#e04848";
+        }
+    } else {
+        if(candidateTotals[0].id === PLAYER_CANDIDATE_ID) {
+            winnerText = "VICTORY!";
+            subText = "You won the Panchayat Election!";
+            boxColor = "#48b848";
+        } else {
+            winnerText = "DEFEATED";
+            subText = `${candidateTotals[0].name} won the election.`;
+            boxColor = "#e04848";
+        }
+    }
+    
+    DOM.endGameWinnerBox.textContent = winnerText;
+    DOM.endGameWinnerBox.style.color = boxColor;
+    DOM.endGameSubtext.textContent = subText;
+    
+    DOM.endGameStandings.innerHTML = '';
+    candidateTotals.forEach((c, idx) => {
+        const row = document.createElement('div');
+        row.style.cssText = "font-family:'Press Start 2P'; font-size: 8px; margin-bottom: 12px; color: " + (c.id === PLAYER_CANDIDATE_ID ? "#48b848" : "#ccc") + ";";
+        row.textContent = `${idx + 1}. ${c.name} - ${c.total.toFixed(2)}% (Peak: ${c.maxGroup.toFixed(2)}%)`;
+        DOM.endGameStandings.appendChild(row);
+    });
+
+    DOM.endGameOverlay.classList.add('active');
+    DOM.addManifestoBtn.style.opacity = '0.5';
+    DOM.addManifestoBtn.style.pointerEvents = 'none';
+}
+
+
+
+// ══════════════════════════════════
+//  BOOT
+// ══════════════════════════════════
+
+// ══════════════════════════════════
+//  SABOTAGE SYSTEM
+// ══════════════════════════════════
+
+function openSabotagePopup() {
+    if (gameState.candidate.coins < 75) {
+        showToast('❌', 'Need 75 coins for sabotage!');
+        return;
+    }
+    DOM.sabotagePromptInput.value = '';
+    DOM.sabotageOverlay.classList.add('active');
+}
+
+function closeSabotagePopup() {
+    DOM.sabotageOverlay.classList.remove('active');
+}
+
+async function executeSabotage() {
+    const targetId = parseInt(DOM.sabotageTargetSelect.value);
+    const sabotageText = DOM.sabotagePromptInput.value.trim();
+    
+    if (!sabotageText) {
+        showToast('❌', 'Write your sabotage attack!');
+        return;
+    }
+    
+    if (gameState.candidate.coins < 75) {
+        showToast('❌', 'Not enough coins!');
+        return;
+    }
+
+    // Disable button during API call
+    DOM.sabotageSubmitBtn.disabled = true;
+    DOM.sabotageSubmitBtn.querySelector('.popup-action-text').textContent = '⏳ SENDING...';
+    
+    try {
+        const result = await apiFetch('/api/player-sabotage', {
+            method: 'POST',
+            body: JSON.stringify({ target_id: targetId, sabotage_prompt: sabotageText }),
+            timeoutMs: 30000
+        });
+        
+        closeSabotagePopup();
+        
+        // Deduct coins locally
+        gameState.candidate.coins -= 75;
+        localStorage.setItem('playerCoins', gameState.candidate.coins);
+        DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+
+        // Show result popup
+        if (result.status === 'blocked') {
+            DOM.sabotageResultTitle.textContent = '⚖️ BLOCKED!';
+            DOM.sabotageResultTitle.style.color = '#e04848';
+            DOM.sabotageResultMessage.textContent = result.message;
+            DOM.sabotageResultDialogue.textContent = `Reason: ${result.reason}`;
+        } else {
+            let damagePct = result.multiplier ? Math.round(result.multiplier * 100) : '??';
+            DOM.sabotageResultTitle.textContent = '💥 SABOTAGE SUCCESS!';
+            DOM.sabotageResultTitle.style.color = '#48b848';
+            DOM.sabotageResultMessage.textContent = `${result.target_name} lost ${damagePct}% voter share!`;
+            DOM.sabotageResultDialogue.textContent = result.dialogue || '';
+        }
+        DOM.sabotageResultOverlay.classList.add('active');
+        
+        // Re-sync shares after sabotage
+        await loadVoterStanding();
+        renderBarChart();
+        renderOpponentsSidebar();
+
+        // NPC Turn (same as after ADD MANIFESTO)
+        try {
+            const npcRes = await apiFetch('/api/end-turn', { method: 'POST', timeoutMs: 30000 });
+            if (npcRes.npc_actions && npcRes.npc_actions.length > 0) {
+                await animateNpcTurns(npcRes.npc_actions);
+            }
+        } catch (err) {
+            console.error("NPC turn failed:", err);
+        }
+
+        // Re-sync after NPC turns
+        await loadVoterStanding();
+        renderBarChart();
+        renderOpponentsSidebar();
+
+        // Round reward
+        gameState.candidate.coins += 25;
+        localStorage.setItem('playerCoins', gameState.candidate.coins);
+        DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+        setTimeout(() => showToast('🪙', 'Round End! +25 Coins Granted'), 500);
+
+        // Track round
+        gameState.turnNumber++;
+        localStorage.setItem('turnNumber', gameState.turnNumber);
+        if (gameState.turnNumber <= 5) {
+            DOM.roundTrackerText.textContent = `RND ${gameState.turnNumber}/5`;
+        } else {
+            DOM.roundTrackerText.textContent = `RND 5/5`;
+            setTimeout(() => evaluateElectionResults(), 1000);
+        }
+        
+    } catch (err) {
+        console.error('Sabotage error:', err);
+        showToast('❌', 'Sabotage failed! Try again.');
+    } finally {
+        DOM.sabotageSubmitBtn.disabled = false;
+        DOM.sabotageSubmitBtn.querySelector('.popup-action-text').textContent = '💣 LAUNCH SABOTAGE';
+    }
+}
+
+// Sabotage event listeners
+if (DOM.sabotageBtn) DOM.sabotageBtn.addEventListener('click', openSabotagePopup);
+if (DOM.sabotageCloseBtn) DOM.sabotageCloseBtn.addEventListener('click', closeSabotagePopup);
+if (DOM.sabotageSubmitBtn) DOM.sabotageSubmitBtn.addEventListener('click', executeSabotage);
+if (DOM.sabotageResultCloseBtn) DOM.sabotageResultCloseBtn.addEventListener('click', () => {
+    DOM.sabotageResultOverlay.classList.remove('active');
+});
 
 
 // ══════════════════════════════════

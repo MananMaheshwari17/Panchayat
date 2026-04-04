@@ -187,6 +187,23 @@
       "counter_narrative": "I went abroad to learn and came back to serve. Brain drain criticism is exactly why talent leaves India in the first place."
     }
   ],
+  "player": [
+    {
+      "id": "player_weak_01",
+      "title": "Hidden Campaign Funding",
+      "severity": 4,
+      "description": "Rumors suggest the player's campaign receives heavy unregulated donations from outside developers aiming to buy village land.",
+      "evidence": "Stash of new currency notes found near campaign headquarters.",
+      "affected_demographics": {
+        "kisan": -10,
+        "yuva": -5,
+        "vyapari": -2,
+        "sarkari": -5,
+        "gramin_nari": -8
+      },
+      "counter_narrative": "These are grassroots donations from ordinary villagers who want change."
+    }
+  ],
   "meta": {
     "version": "1.0.0",
     "severity_scale": "1 (minor embarrassment) to 5 (career-threatening scandal)",

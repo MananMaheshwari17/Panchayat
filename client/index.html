@@ -39,6 +39,11 @@
                     <span class="lstar filled">★</span>
                 </div>
             </div>
+            <div class="level-badge" style="margin-left: 15px; border-color: #48b848; background: #288028;">
+                <div class="level-shield" style="background: #389838;">
+                    <span class="level-text" id="roundTrackerText">RND 1/5</span>
+                </div>
+            </div>
         </div>
 
         <div class="topbar-right">
@@ -126,12 +131,63 @@
 
         </div>
 
-        <!-- ADD MANIFESTO BUTTON (bottom-right) -->
-        <button class="add-manifesto-btn" id="addManifestoBtn">
-            <span class="btn-plus">✚</span>
-            <span class="btn-label">ADD MANIFESTO (50 🪙)</span>
-        </button>
+        <!-- ACTION BUTTONS (bottom-right, stacked) -->
+        <div style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 50; align-items: flex-end;">
+            <button class="add-manifesto-btn" id="sabotageBtn" style="position: static; background: linear-gradient(180deg, #c03030 0%, #801818 100%); box-shadow: 0 6px 0 #601010;">
+                <span class="btn-plus">💣</span>
+                <span class="btn-label">SABOTAGE (75 🪙)</span>
+            </button>
+            <button class="add-manifesto-btn" id="addManifestoBtn" style="position: static;">
+                <span class="btn-plus">✚</span>
+                <span class="btn-label">ADD MANIFESTO (50 🪙)</span>
+            </button>
+        </div>
     </main>
+
+    <!-- ═══ SABOTAGE POPUP ═══ -->
+    <div class="popup-overlay" id="sabotageOverlay">
+        <div class="popup-panel" id="sabotagePanel" style="border: 4px solid #e04848;">
+            <button class="popup-close-btn" id="sabotageCloseBtn">✕</button>
+            <div class="panel-card-header" style="margin-bottom: 12px;">
+                <span class="panel-card-title" style="color: #e04848;">💣 SABOTAGE OPERATION</span>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; display: block; margin-bottom: 8px;">🎯 SELECT TARGET:</label>
+                <select id="sabotageTargetSelect" style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none;">
+                    <option value="0">🏗️ Vikas Purush</option>
+                    <option value="1">🛡️ Dharma Rakshak</option>
+                    <option value="2">📢 Jan Neta</option>
+                    <option value="3">🕊️ Mukti Devi</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; display: block; margin-bottom: 8px;">📝 YOUR SABOTAGE DIALOGUE:</label>
+                <textarea id="sabotagePromptInput" style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none; resize: vertical; min-height: 80px;" placeholder="Write your political attack here... Be strategic! The closer you hit their real weakness, the more damage you deal." rows="4"></textarea>
+            </div>
+
+            <p style="font-family: 'Press Start 2P'; font-size: 7px; color: #888; margin-bottom: 12px; line-height: 1.5;">
+                ⚖️ The Election Commissioner (ArmorIQ) will review your sabotage for code of conduct violations. Clean political attacks are allowed!
+            </p>
+
+            <button class="popup-action-btn" id="sabotageSubmitBtn" style="background: #c03030; box-shadow: 0 4px 0 #801818;">
+                <span class="popup-action-text">💣 LAUNCH SABOTAGE</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══ SABOTAGE RESULT POPUP ═══ -->
+    <div class="popup-overlay" id="sabotageResultOverlay">
+        <div class="popup-panel" style="max-height: 350px; text-align: center; border: 4px solid #e8a040;">
+            <div class="panel-card-title" id="sabotageResultTitle" style="color: #e04848; margin-bottom: 15px; font-size: 14px;">RESULT</div>
+            <p id="sabotageResultMessage" style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 15px;"></p>
+            <p id="sabotageResultDialogue" style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; line-height: 1.4; margin-bottom: 20px; font-style: italic;"></p>
+            <button class="popup-action-btn" id="sabotageResultCloseBtn" style="background: #e8a040; box-shadow: 0 4px 0 #c89838;">
+                <span class="popup-action-text">OK</span>
+            </button>
+        </div>
+    </div>
 
     <!-- ═══ ADD MANIFESTO POPUP ═══ -->
     <div class="popup-overlay" id="popupOverlay">
@@ -201,6 +257,24 @@
                     <span class="popup-action-text">NO</span>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══ ELECTION RESULTS POPUP ═══ -->
+    <div class="popup-overlay" id="endGameOverlay">
+        <div class="popup-panel" style="max-height: 480px; text-align: center; border: 4px solid #f0c040;">
+            <div class="panel-card-title" id="endGameWinnerBox" style="color: #48b848; margin-bottom: 15px; font-size: 16px;">VICTORY!</div>
+            <p id="endGameSubtext" style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 25px;">
+                You won the Panchayat Election!
+            </p>
+            
+            <div id="endGameStandings" style="background: #181818; border: 2px solid #585858; padding: 10px; margin-bottom: 20px; text-align: left; max-height: 200px; overflow-y: auto;">
+                <!-- Final results populated by JS -->
+            </div>
+            
+            <button class="popup-action-btn" id="playAgainBtn" style="background: #f0c040; box-shadow: 0 4px 0 #c89838;">
+                <span class="popup-action-text">🏆 PLAY AGAIN</span>
+            </button>
         </div>
     </div>
 
