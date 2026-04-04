@@ -1,6 +1,7 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
+armoriq-sdk==0.3.0
 certifi==2026.2.25
 cffi==2.0.0
 charset-normalizer==3.4.7
@@ -9,6 +10,7 @@ configparser==7.2.0
 cryptography==46.0.6
 distro==1.9.0
 dnspython==2.8.0
+elevenlabs==2.41.0
 fastapi==0.135.3
 filetype==1.2.0
 google-ai-generativelanguage==0.6.15
@@ -19,6 +21,7 @@ google-auth-httplib2==0.3.1
 google-genai==1.70.0
 google-generativeai==0.8.6
 googleapis-common-protos==1.74.0
+groq==1.1.2
 grpcio==1.80.0
 grpcio-status==1.71.2
 h11==0.16.0

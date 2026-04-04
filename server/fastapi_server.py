@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 from pymongo import MongoClient
 import os
 import random
@@ -14,7 +16,10 @@ from groq import Groq
 from data.manifesto_bank import get_available_manifestos, claim_manifesto, get_all_manifestos
 from server.init_db import restart_game_state
 
+# Load env: try server/.env (dev), then root .env (Docker), then rely on system env vars
 env_path = os.path.join(os.path.dirname(__file__), '.env')
+if not os.path.exists(env_path):
+    env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(dotenv_path=env_path, override=True)
 app = FastAPI()
 
@@ -388,33 +393,32 @@ async def text_to_speech(req: TTSRequest):
 
     # Map speech_style to voice_settings adjustments
     style_settings = {
-        "visionary":     {"stability": 0.4, "similarity_boost": 0.8, "style": 0.7},
-        "inspirational": {"stability": 0.35, "similarity_boost": 0.85, "style": 0.8},
-        "emotional":     {"stability": 0.3, "similarity_boost": 0.9, "style": 0.9},
-        "compassionate": {"stability": 0.5, "similarity_boost": 0.85, "style": 0.6},
-        "reformist":     {"stability": 0.55, "similarity_boost": 0.75, "style": 0.5},
-        "grassroots":    {"stability": 0.45, "similarity_boost": 0.8, "style": 0.65},
-        "aggressive":    {"stability": 0.25, "similarity_boost": 0.9, "style": 0.95},
-        "nationalist":   {"stability": 0.4, "similarity_boost": 0.85, "style": 0.75},
-        "neutral":       {"stability": 0.5, "similarity_boost": 0.75, "style": 0.5},
+        "visionary":     {"stability": 0.5, "similarity_boost": 0.75},
+        "inspirational": {"stability": 0.45, "similarity_boost": 0.8},
+        "emotional":     {"stability": 0.4, "similarity_boost": 0.85},
+        "compassionate": {"stability": 0.55, "similarity_boost": 0.8},
+        "reformist":     {"stability": 0.6, "similarity_boost": 0.7},
+        "grassroots":    {"stability": 0.5, "similarity_boost": 0.75},
+        "aggressive":    {"stability": 0.35, "similarity_boost": 0.85},
+        "nationalist":   {"stability": 0.5, "similarity_boost": 0.8},
+        "neutral":       {"stability": 0.5, "similarity_boost": 0.75},
     }
     settings = style_settings.get(req.speech_style, style_settings["neutral"])
 
     payload = {
         "text": req.text,
-        "model_id": "eleven_multilingual_v2",
+        "model_id": "eleven_flash_v2_5",
         "voice_settings": {
             "stability": settings["stability"],
             "similarity_boost": settings["similarity_boost"],
-            "style": settings["style"],
-            "use_speaker_boost": True
+            "use_speaker_boost": False
         }
     }
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.post(
-                f"{ELEVENLABS_BASE_URL}/text-to-speech/{voice_id}",
+                f"{ELEVENLABS_BASE_URL}/text-to-speech/{voice_id}?optimize_streaming_latency=4&output_format=mp3_22050_32",
                 headers={
                     "xi-api-key": ELEVENLABS_API_KEY,
                     "Content-Type": "application/json",
@@ -694,3 +698,18 @@ Example:
         })
 
     return {"status": "success", "npc_actions": actions}
+
+
+# ══════════════════════════════════
+#  STATIC FILE SERVING (Production)
+# ══════════════════════════════════
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+CLIENT_DIR = BASE_DIR / "client"
+
+@app.get("/")
+async def serve_index():
+    return FileResponse(str(CLIENT_DIR / "index.html"))
+
+# Mount client directory LAST (after all API routes)
+app.mount("/", StaticFiles(directory=str(CLIENT_DIR)), name="static")

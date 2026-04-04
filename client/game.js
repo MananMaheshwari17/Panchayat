@@ -3,7 +3,9 @@
    ================================================ */
 
 // ── CONFIG ──
-const API_BASE = 'http://localhost:8000'; // FastAPI server
+// Auto-detect: if served from FastAPI (port 8000 or production), use relative URLs; otherwise point to FastAPI dev server
+const API_BASE = (window.location.port === '8000' || window.location.port === '80' || window.location.port === '443' || window.location.port === '')
+    ? '' : 'http://localhost:8000';
 const PLAYER_CANDIDATE_ID = 4;           // Player is always candidate 4
 const NUM_CANDIDATES = 5;                // 5 candidates (0-3 NPC, 4 Player)
 const GROUP_CAP = 20.0;                  // Each voter group = 20% of total population
@@ -955,7 +957,7 @@ async function animateNpcTurns(npcActions) {
         if (action.type === "manifesto" || !action.type) {
             SoundFX.turnStart();
             DOM.announcerAction.textContent = "is thinking...";
-            await sleep(800);
+            await sleep(400);
             
             DOM.announcerAction.innerHTML = `Chose: <br><br> <span style="color:#fff; font-size:12px;">${action.title}</span> <br><br> <span style="color:#e04848">(+${action.shift_amount}% for ${getGroupName(action.group_id)})</span>`;
             
@@ -969,7 +971,7 @@ async function animateNpcTurns(npcActions) {
                 target_group_id: action.group_id,
                 shift_amount: action.shift_amount
             });
-            await sleep(1500);
+            await sleep(600);
             
             // If this NPC action has dialogue, show the dialogue popup with TTS
             if (action.dialogue && action.dialogue.trim()) {
@@ -984,7 +986,7 @@ async function animateNpcTurns(npcActions) {
                 );
                 DOM.turnAnnouncerOverlay.classList.add('active');
             } else {
-                await sleep(1000);
+                await sleep(500);
             }
         } else if (action.type === "sabotage") {
             SoundFX.sabotageLaunch();
@@ -996,7 +998,7 @@ async function animateNpcTurns(npcActions) {
             }
             
             DOM.announcerAction.innerHTML = `<span style="color:#e04848; font-size:12px;">💣 launched SABOTAGE against ${vicName}!</span>`;
-            await sleep(1500);
+            await sleep(800);
             
             let sabText = `<br><span style="color:#999; font-style:italic; font-size:9px;">"${action.sabotage_text || ''}"</span><br><br>`;
             
@@ -1006,7 +1008,7 @@ async function animateNpcTurns(npcActions) {
                 let damagePct = action.multiplier ? Math.round(action.multiplier * 100) : '??';
                 DOM.announcerAction.innerHTML += sabText + `<span style="color:#e04848; font-size:14px; font-weight:bold;">💥 SABOTAGE SUCCESS!</span><br><span style="color:#e8a040; font-size:9px;">${action.dialogue || ''}</span><br><span style="color:#e04848; font-size:8px;">${vicName} lost ${damagePct}% voter share!</span>`;
             }
-            await sleep(4000);
+            await sleep(2000);
         }
     }
     
@@ -1290,6 +1292,7 @@ function playCharacterSpeech(text, candidateId, speechStyle = 'neutral') {
             const audio = new Audio(url);
             gameState.currentAudio = audio;
 
+            audio.playbackRate = 1.15; // Slightly faster speech
             audio.addEventListener('playing', () => {
                 startResolve();
             }, { once: true });
@@ -1361,7 +1364,7 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
             DOM.dialogueText.textContent = '';
             DOM.dialogueText.classList.add('typing');
 
-            const typeSpeed = 35; // ms per character
+            const typeSpeed = 20; // ms per character (fast typewriter)
             typewriterInterval = setInterval(() => {
                 if (charIndex < dialogueText.length) {
                     DOM.dialogueText.textContent += dialogueText[charIndex];
