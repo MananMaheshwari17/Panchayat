@@ -363,6 +363,7 @@ const DOM = {
     popupScrollArea: document.getElementById('popupScrollArea'),
     customManifestoInput: document.getElementById('customManifestoInput'),
     popupActionBtn: document.getElementById('popupActionBtn'),
+    leaderboardList: document.getElementById('leaderboardList'),
     toast: document.getElementById('toast'),
     toastMsg: document.getElementById('toastMsg'),
     coinCount: document.getElementById('coinCount'),
@@ -888,6 +889,65 @@ function renderBarChart() {
 
     // Play a single chart tick when bars are rapidly redrawn
     soundManager.play('chart_tick');
+
+    // Also update leaderboard whenever charts update
+    renderLeaderboard();
+}
+
+function renderLeaderboard() {
+    if (!DOM.leaderboardList) return;
+
+    const candidateTotals = [];
+    
+    // Calculate live totals (sum of all group shares per candidate)
+    for (let cid = 0; cid <= 4; cid++) {
+        let total = 0;
+        if (cid === PLAYER_CANDIDATE_ID) {
+            gameState.voterShares.forEach(g => {
+                total += g.percent;
+            });
+        } else {
+            VOTER_GROUPS.forEach(g => {
+                const s = gameState.allShares[g.id]?.[cid] ?? INITIAL_SHARE;
+                total += s;
+            });
+        }
+
+        let candName = cid === PLAYER_CANDIDATE_ID ? gameState.candidate.name + " (You)" : NPC_CANDIDATES.find(n => n.id === cid).name;
+        
+        candidateTotals.push({
+            id: cid,
+            name: candName,
+            total: Math.round(total * 100) / 100,
+            isPlayer: cid === PLAYER_CANDIDATE_ID
+        });
+    }
+
+    // Sort heavily to lightly (highest percentage on top)
+    candidateTotals.sort((a, b) => b.total - a.total);
+
+    DOM.leaderboardList.innerHTML = '';
+
+    candidateTotals.forEach((cand, idx) => {
+        const item = document.createElement('li');
+        item.className = 'leaderboard-item';
+        if (cand.isPlayer) item.classList.add('is-player');
+
+        // Number prefix
+        let prefix = `#${idx + 1}`;
+        if (idx === 0) prefix = '🥇';
+        if (idx === 1) prefix = '🥈';
+        if (idx === 2) prefix = '🥉';
+
+        item.innerHTML = `
+            <div style="display:flex; align-items:center; gap:5px;">
+                <span>${prefix}</span>
+                <span class="cand-name" title="${cand.name}">${cand.name}</span>
+            </div>
+            <span class="cand-score">${cand.total.toFixed(2)}%</span>
+        `;
+        DOM.leaderboardList.appendChild(item);
+    });
 }
 
 

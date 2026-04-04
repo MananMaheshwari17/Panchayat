@@ -1955,4 +1955,75 @@ body {
 .settings-btn.muted {
     opacity: 0.5;
     text-decoration: line-through;
+}/* ----------------------------------
+    LEADERBOARD WIDGET
+---------------------------------- */
+.leaderboard-widget {
+    position: fixed;
+    right: 20px;
+    top: 100px; /* Below topbar */
+    width: 220px;
+    background: var(--panel-bg);
+    border: 4px solid var(--pixel-gold);
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    z-index: 40;
+    font-family: 'Press Start 2P', monospace;
+    transition: all 0.3s ease;
+}
+
+.leaderboard-header {
+    background: var(--pixel-gold);
+    color: var(--pixel-black);
+    padding: 8px;
+    text-align: center;
+    border-bottom: 4px solid var(--panel-header);
+}
+
+.leaderboard-title {
+    font-size: 10px;
+}
+
+.leaderboard-body {
+    padding: 10px;
+}
+
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #181818;
+    border: 2px solid #333;
+    padding: 6px;
+    font-size: 8px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.leaderboard-item .cand-name {
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+}
+
+.leaderboard-item .cand-score {
+    color: #e8a040; /* Retro gold/orange */
+}
+
+.leaderboard-item.is-player {
+    border-color: #48b848;
+    background: #132413;
+}
+
+.leaderboard-item.is-player .cand-name {
+    color: #48b848;
 }
