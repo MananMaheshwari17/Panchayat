@@ -20,10 +20,10 @@ const VOTER_GROUPS = [
 
 // ── NPC Candidates (matches init_db.py) ──
 const NPC_CANDIDATES = [
-    { id: 0, name: 'Vikas Purush',   archetype: 'vikas_purush',   emoji: '🏗️', color: '#e8a040' },
-    { id: 1, name: 'Dharma Rakshak', archetype: 'dharma_rakshak', emoji: '🛡️', color: '#e04848' },
-    { id: 2, name: 'Jan Neta',       archetype: 'jan_neta',       emoji: '📢', color: '#4088e0' },
-    { id: 3, name: 'Mukti Devi',     archetype: 'mukti_devi',     emoji: '🕊️', color: '#a048c8' }
+    { id: 0, name: 'Vikas Purush',   archetype: 'vikas_purush',   emoji: '🏗️', color: '#e8a040', avatar: 'assets/vikas_purush_avatar.png' },
+    { id: 1, name: 'Dharma Rakshak', archetype: 'dharma_rakshak', emoji: '🛡️', color: '#e04848', avatar: 'assets/dharma_rakshak_avatar.png' },
+    { id: 2, name: 'Jan Neta',       archetype: 'jan_neta',       emoji: '📢', color: '#4088e0', avatar: 'assets/jan_neta_avatar.png' },
+    { id: 3, name: 'Mukti Devi',     archetype: 'mukti_devi',     emoji: '🕊️', color: '#a048c8', avatar: 'assets/mukti_devi_avatar.png' }
 ];
 
 // ── Game State (local mirror of DB) ──
@@ -741,7 +741,7 @@ function renderOpponentsSidebar() {
         const header = document.createElement('div');
         header.className = 'opponent-card-header';
         header.innerHTML = `
-            <div class="opponent-avatar" style="background: ${npc.color};">${npc.emoji}</div>
+            <img src="${npc.avatar}" alt="${npc.name}" class="opponent-avatar-img" style="width: 36px; height: 36px; border: 2px solid ${npc.color}; object-fit: cover; image-rendering: pixelated;">
             <span class="opponent-name">${npc.name}</span>
             <span class="opponent-total">${totalSupport}%</span>
         `;
