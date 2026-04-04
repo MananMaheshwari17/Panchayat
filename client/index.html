@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panchayat - A retro pixel-art political simulator game where you build your manifesto and win elections">
+    <meta name="description"
+        content="Panchayat - A retro pixel-art political simulator game where you build your manifesto and win elections">
     <title>Panchayat - Political Simulator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <!-- Background -->
     <div class="game-bg">
@@ -18,6 +21,27 @@
 
     <!-- Pixel Particle Canvas (fireflies/sparkles) -->
     <canvas id="pixelParticles"></canvas>
+
+    <!-- ═══ START SCREEN ═══ -->
+    <div class="start-screen-overlay active" id="startScreenOverlay">
+        <div class="start-screen-content">
+            <h1 class="start-title">PANCHAYAT</h1>
+            <p class="start-subtitle">Pixel Politics Simulator</p>
+
+            <div class="start-menu">
+                <button class="start-menu-btn" id="startSinglePlayerBtn">
+                    <span class="btn-icon">🕹️</span> SINGLE PLAYER
+                </button>
+                <button class="start-menu-btn disabled" id="startMultiPlayerBtn">
+                    <span class="btn-icon">🌐</span> MULTI PLAYER <span
+                        style="font-size: 8px; color: #a0a0a0; margin-left: 5px;">(SOON)</span>
+                </button>
+                <button class="start-menu-btn" id="startSoundToggleBtn">
+                    <span class="btn-icon">🔊</span> SOUND: ON
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ═══ TOP BAR ═══ -->
     <header class="topbar" id="topbar">
@@ -77,7 +101,8 @@
         <section class="candidate-card" id="candidateCard">
             <div class="candidate-inner">
                 <div class="avatar-frame">
-                    <img src="assets/pixel_candidate_avatar.png" alt="Rajesh Kumar" class="avatar-img" id="candidateAvatar">
+                    <img src="assets/pixel_candidate_avatar.png" alt="Rajesh Kumar" class="avatar-img"
+                        id="candidateAvatar">
                 </div>
                 <div class="candidate-info">
                     <h1 class="candidate-name" id="candidateName">Rajesh Kumar</h1>
@@ -118,9 +143,11 @@
 
             <!-- RIGHT PANEL: Voter Demographics -->
             <section class="panel-card demographics-panel" id="demographicsPanel">
-                <div class="panel-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="panel-card-header"
+                    style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="panel-card-title">📊 VOTERS</span>
-                    <span class="panel-card-title" id="playerTotalShares" style="color: #48b848; font-size: 10px;">20.00%</span>
+                    <span class="panel-card-title" id="playerTotalShares"
+                        style="color: #48b848; font-size: 10px;">20.00%</span>
                 </div>
                 <div class="panel-card-body">
                     <div class="demographics-column" id="demographicsColumn">
@@ -134,8 +161,10 @@
         </div>
 
         <!-- ACTION BUTTONS (bottom-right, stacked) -->
-        <div style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 50; align-items: flex-end;">
-            <button class="add-manifesto-btn" id="sabotageBtn" style="position: static; background: linear-gradient(180deg, #c03030 0%, #801818 100%); box-shadow: 0 6px 0 #601010;">
+        <div
+            style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 50; align-items: flex-end;">
+            <button class="add-manifesto-btn" id="sabotageBtn"
+                style="position: static; background: linear-gradient(180deg, #c03030 0%, #801818 100%); box-shadow: 0 6px 0 #601010;">
                 <span class="btn-plus">💣</span>
                 <span class="btn-label">SABOTAGE (75 🪙)</span>
             </button>
@@ -155,8 +184,11 @@
             </div>
 
             <div style="margin-bottom: 12px;">
-                <label style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; display: block; margin-bottom: 8px;">🎯 SELECT TARGET:</label>
-                <select id="sabotageTargetSelect" style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none;">
+                <label
+                    style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; display: block; margin-bottom: 8px;">🎯
+                    SELECT TARGET:</label>
+                <select id="sabotageTargetSelect"
+                    style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none;">
                     <option value="0">🏗️ Vikas Purush</option>
                     <option value="1">🛡️ Dharma Rakshak</option>
                     <option value="2">📢 Jan Neta</option>
@@ -165,15 +197,23 @@
             </div>
 
             <div style="margin-bottom: 12px;">
-                <label style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; display: block; margin-bottom: 8px;">📝 YOUR SABOTAGE DIALOGUE:</label>
-                <textarea id="sabotagePromptInput" style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none; resize: vertical; min-height: 80px;" placeholder="Write your political attack here... Be strategic! The closer you hit their real weakness, the more damage you deal." rows="4"></textarea>
+                <label
+                    style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; display: block; margin-bottom: 8px;">📝
+                    YOUR SABOTAGE DIALOGUE:</label>
+                <textarea id="sabotagePromptInput"
+                    style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none; resize: vertical; min-height: 80px;"
+                    placeholder="Write your political attack here... Be strategic! The closer you hit their real weakness, the more damage you deal."
+                    rows="4"></textarea>
             </div>
 
-            <p style="font-family: 'Press Start 2P'; font-size: 7px; color: #888; margin-bottom: 12px; line-height: 1.5;">
-                ⚖️ The Election Commissioner (ArmorIQ) will review your sabotage for code of conduct violations. Clean political attacks are allowed!
+            <p
+                style="font-family: 'Press Start 2P'; font-size: 7px; color: #888; margin-bottom: 12px; line-height: 1.5;">
+                ⚖️ The Election Commissioner (ArmorIQ) will review your sabotage for code of conduct violations. Clean
+                political attacks are allowed!
             </p>
 
-            <button class="popup-action-btn" id="sabotageSubmitBtn" style="background: #c03030; box-shadow: 0 4px 0 #801818;">
+            <button class="popup-action-btn" id="sabotageSubmitBtn"
+                style="background: #c03030; box-shadow: 0 4px 0 #801818;">
                 <span class="popup-action-text">💣 LAUNCH SABOTAGE</span>
             </button>
         </div>
@@ -182,10 +222,16 @@
     <!-- ═══ SABOTAGE RESULT POPUP ═══ -->
     <div class="popup-overlay" id="sabotageResultOverlay">
         <div class="popup-panel" style="max-height: 350px; text-align: center; border: 4px solid #e8a040;">
-            <div class="panel-card-title" id="sabotageResultTitle" style="color: #e04848; margin-bottom: 15px; font-size: 14px;">RESULT</div>
-            <p id="sabotageResultMessage" style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 15px;"></p>
-            <p id="sabotageResultDialogue" style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; line-height: 1.4; margin-bottom: 20px; font-style: italic;"></p>
-            <button class="popup-action-btn" id="sabotageResultCloseBtn" style="background: #e8a040; box-shadow: 0 4px 0 #c89838;">
+            <div class="panel-card-title" id="sabotageResultTitle"
+                style="color: #e04848; margin-bottom: 15px; font-size: 14px;">RESULT</div>
+            <p id="sabotageResultMessage"
+                style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 15px;">
+            </p>
+            <p id="sabotageResultDialogue"
+                style="font-family: 'Press Start 2P'; font-size: 8px; color: #e8a040; line-height: 1.4; margin-bottom: 20px; font-style: italic;">
+            </p>
+            <button class="popup-action-btn" id="sabotageResultCloseBtn"
+                style="background: #e8a040; box-shadow: 0 4px 0 #c89838;">
                 <span class="popup-action-text">OK</span>
             </button>
         </div>
@@ -205,7 +251,8 @@
             <!-- Custom Input Section -->
             <div class="popup-custom-input">
                 <div class="custom-input-icon">🪶</div>
-                <textarea class="custom-manifesto-textarea" id="customManifestoInput" placeholder="Write your own manifesto…" rows="2"></textarea>
+                <textarea class="custom-manifesto-textarea" id="customManifestoInput"
+                    placeholder="Write your own manifesto…" rows="2"></textarea>
             </div>
 
             <!-- Add to Campaign Button -->
@@ -231,8 +278,10 @@
     <!-- ═══ TURN ANNOUNCER POPUP ═══ -->
     <div class="popup-overlay" id="turnAnnouncerOverlay">
         <div class="popup-panel" style="max-height: 250px; text-align: center; border: 4px solid #f0c040;">
-            <div class="panel-card-title" id="announcerName" style="color: #f0c040; margin-bottom: 20px; font-size: 14px;">Candidate Name</div>
-            <p id="announcerAction" style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 30px;">
+            <div class="panel-card-title" id="announcerName"
+                style="color: #f0c040; margin-bottom: 20px; font-size: 14px;">Candidate Name</div>
+            <p id="announcerAction"
+                style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 30px;">
                 Is thinking...
             </p>
         </div>
@@ -248,14 +297,17 @@
     <div class="popup-overlay" id="restartOverlay">
         <div class="popup-panel" style="max-height: 250px; text-align: center;">
             <div class="panel-card-title" style="color: #e04848; margin-bottom: 20px;">⚠️ WARNING ⚠️</div>
-            <p style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 30px;">
+            <p
+                style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 30px;">
                 Are you sure you want to restart?<br><br>All progress will be lost!
             </p>
             <div style="display: flex; gap: 15px; justify-content: center;">
-                <button class="popup-action-btn" id="confirmRestartBtn" style="background: #e04848; width: 120px; box-shadow: 0 4px 0 #902020;">
+                <button class="popup-action-btn" id="confirmRestartBtn"
+                    style="background: #e04848; width: 120px; box-shadow: 0 4px 0 #902020;">
                     <span class="popup-action-text">YES</span>
                 </button>
-                <button class="popup-action-btn" id="cancelRestartBtn" style="background: #e8a040; width: 120px; box-shadow: 0 4px 0 #986010;">
+                <button class="popup-action-btn" id="cancelRestartBtn"
+                    style="background: #e8a040; width: 120px; box-shadow: 0 4px 0 #986010;">
                     <span class="popup-action-text">NO</span>
                 </button>
             </div>
@@ -265,16 +317,20 @@
     <!-- ═══ ELECTION RESULTS POPUP ═══ -->
     <div class="popup-overlay" id="endGameOverlay">
         <div class="popup-panel" style="max-height: 480px; text-align: center; border: 4px solid #f0c040;">
-            <div class="panel-card-title" id="endGameWinnerBox" style="color: #48b848; margin-bottom: 15px; font-size: 16px;">VICTORY!</div>
-            <p id="endGameSubtext" style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 25px;">
+            <div class="panel-card-title" id="endGameWinnerBox"
+                style="color: #48b848; margin-bottom: 15px; font-size: 16px;">VICTORY!</div>
+            <p id="endGameSubtext"
+                style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 25px;">
                 You won the Panchayat Election!
             </p>
-            
-            <div id="endGameStandings" style="background: #181818; border: 2px solid #585858; padding: 10px; margin-bottom: 20px; text-align: left; max-height: 200px; overflow-y: auto;">
+
+            <div id="endGameStandings"
+                style="background: #181818; border: 2px solid #585858; padding: 10px; margin-bottom: 20px; text-align: left; max-height: 200px; overflow-y: auto;">
                 <!-- Final results populated by JS -->
             </div>
-            
-            <button class="popup-action-btn" id="playAgainBtn" style="background: #f0c040; box-shadow: 0 4px 0 #c89838;">
+
+            <button class="popup-action-btn" id="playAgainBtn"
+                style="background: #f0c040; box-shadow: 0 4px 0 #c89838;">
                 <span class="popup-action-text">🏆 PLAY AGAIN</span>
             </button>
         </div>
@@ -355,4 +411,5 @@
 
     <script src="game.js"></script>
 </body>
+
 </html>
