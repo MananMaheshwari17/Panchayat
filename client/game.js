@@ -11,19 +11,19 @@ const INITIAL_SHARE = 4.0;              // GROUP_CAP / NUM_CANDIDATES = 4% each
 
 // ── Voter Group Mapping (matches init_db.py) ──
 const VOTER_GROUPS = [
-    { id: 0, name: 'Farmers',      icon: '🌾', color: '#48b848' },
-    { id: 1, name: 'Students',     icon: '📱', color: '#4088e0' },
+    { id: 0, name: 'Farmers', icon: '🌾', color: '#48b848' },
+    { id: 1, name: 'Students', icon: '📱', color: '#4088e0' },
     { id: 2, name: 'Tech Workers', icon: '💻', color: '#e8d040' },
-    { id: 3, name: 'Laborers',     icon: '⚒️', color: '#e04848' },
-    { id: 4, name: 'Youth',        icon: '🏃', color: '#a048c8' }
+    { id: 3, name: 'Laborers', icon: '⚒️', color: '#e04848' },
+    { id: 4, name: 'Youth', icon: '🏃', color: '#a048c8' }
 ];
 
 // ── NPC Candidates (matches init_db.py) ──
 const NPC_CANDIDATES = [
-    { id: 0, name: 'Vikas Purush',   archetype: 'vikas_purush',   emoji: '🏗️', color: '#e8a040', avatar: 'assets/vikas_purush_avatar.png' },
+    { id: 0, name: 'Vikas Purush', archetype: 'vikas_purush', emoji: '🏗️', color: '#e8a040', avatar: 'assets/vikas_purush_avatar.png' },
     { id: 1, name: 'Dharma Rakshak', archetype: 'dharma_rakshak', emoji: '🛡️', color: '#e04848', avatar: 'assets/dharma_rakshak_avatar.png' },
-    { id: 2, name: 'Jan Neta',       archetype: 'jan_neta',       emoji: '📢', color: '#4088e0', avatar: 'assets/jan_neta_avatar.png' },
-    { id: 3, name: 'Mukti Devi',     archetype: 'mukti_devi',     emoji: '🕊️', color: '#a048c8', avatar: 'assets/mukti_devi_avatar.png' }
+    { id: 2, name: 'Jan Neta', archetype: 'jan_neta', emoji: '📢', color: '#4088e0', avatar: 'assets/jan_neta_avatar.png' },
+    { id: 3, name: 'Mukti Devi', archetype: 'mukti_devi', emoji: '🕊️', color: '#a048c8', avatar: 'assets/mukti_devi_avatar.png' }
 ];
 
 // ── Game State (local mirror of DB) ──
@@ -52,62 +52,303 @@ const gameState = {
 //  SOUND EFFECTS (Web Audio API)
 // ══════════════════════════════════
 
-const SoundFX = {
-    _ctx: null,
-    _getCtx() {
-        if (!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-        return this._ctx;
-    },
-    _play(freq, type, duration, volume = 0.3) {
-        if (gameState.isMuted) return;
-        try {
-            const ctx = this._getCtx();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, ctx.currentTime);
-            gain.gain.setValueAtTime(volume, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-            osc.connect(gain).connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + duration);
-        } catch (e) { /* ignore audio errors */ }
-    },
-    coinSpend() {
-        this._play(880, 'sine', 0.15, 0.2);
-        setTimeout(() => this._play(660, 'sine', 0.15, 0.15), 80);
-    },
-    manifestoAdd() {
-        this._play(523, 'square', 0.08, 0.15);
-        setTimeout(() => this._play(659, 'square', 0.08, 0.15), 60);
-        setTimeout(() => this._play(784, 'square', 0.12, 0.2), 120);
-    },
-    sabotageLaunch() {
-        this._play(120, 'sawtooth', 0.4, 0.25);
-        setTimeout(() => this._play(80, 'sawtooth', 0.3, 0.2), 200);
-    },
-    turnStart() {
-        this._play(440, 'sine', 0.2, 0.15);
-        setTimeout(() => this._play(554, 'sine', 0.2, 0.15), 150);
-        setTimeout(() => this._play(659, 'sine', 0.25, 0.2), 300);
-    },
-    victory() {
-        [523, 659, 784, 1047].forEach((f, i) => {
-            setTimeout(() => this._play(f, 'square', 0.2, 0.2), i * 150);
-        });
-    },
-    defeat() {
-        [440, 370, 330, 262].forEach((f, i) => {
-            setTimeout(() => this._play(f, 'sine', 0.3, 0.2), i * 200);
-        });
-    },
-    dialogueOpen() {
-        this._play(600, 'sine', 0.1, 0.1);
-        setTimeout(() => this._play(800, 'sine', 0.1, 0.1), 60);
-    },
-    click() {
-        this._play(1000, 'square', 0.05, 0.1);
+class SoundManager {
+    constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.bgmGain = null;
+        this.uiGain = null;
+        this.buffers = {};
+        
+        // Active sources
+        this.activeBGM = null;
+        this.activeAmbient = null;
     }
+
+    _initCtx() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.ctx.createGain();
+            this.bgmGain = this.ctx.createGain();
+            this.uiGain = this.ctx.createGain();
+            
+            // Routing
+            this.bgmGain.connect(this.masterGain);
+            this.uiGain.connect(this.masterGain);
+            this.masterGain.connect(this.ctx.destination);
+            
+            // Set default volumes
+            this.bgmGain.gain.value = 0.015; // Extremely low, subtle ambient background
+            this.uiGain.gain.value = 0.6;
+            this._updateMuteState();
+        }
+    }
+
+    _updateMuteState() {
+        if (!this.masterGain) return;
+        this.masterGain.gain.value = gameState.isMuted ? 0 : 1;
+    }
+
+    toggleMute() {
+        gameState.isMuted = !gameState.isMuted;
+        this._updateMuteState();
+        if(!gameState.isMuted && this.ctx && this.ctx.state === 'suspended'){
+            this.ctx.resume();
+        }
+    }
+
+    async loadAssets() {
+        this._initCtx();
+        const assets = {
+            'ui_hover': 'assets/audio/ui_hover.wav',
+            'ui_click': 'assets/audio/ui_click.wav',
+            'error_buzz': 'assets/audio/error_buzz.wav',
+            'add_manifesto': 'assets/audio/add_manifesto.wav',
+            'sabotage_fuse': 'assets/audio/sabotage_fuse.wav',
+            'chart_tick': 'assets/audio/chart_tick.wav',
+            'round_chime': 'assets/audio/round_chime.wav',
+            'bgm_village': 'assets/audio/bgm_village.mp3',
+            'ambient_river': 'assets/audio/ambient_river.mp3'
+        };
+
+        for (const [name, path] of Object.entries(assets)) {
+            try {
+                const response = await fetch(path);
+                if(response.ok) {
+                    const arrayBuffer = await response.arrayBuffer();
+                    this.buffers[name] = await this.ctx.decodeAudioData(arrayBuffer);
+                } else {
+                    console.warn(`[SoundManager] Asset missing: ${path}`);
+                }
+            } catch (err) {
+                console.warn(`[SoundManager] Failed to load ${path}`);
+            }
+        }
+    }
+
+    async play(name) {
+        if (gameState.isMuted) return;
+        this._initCtx();
+        if (this.ctx.state === 'suspended') {
+            try { await this.ctx.resume(); } catch (e) { return; }
+        }
+        if (this.ctx.state !== 'running') return; // abort if still not running
+        
+        const buffer = this.buffers[name];
+        if (buffer) {
+            const source = this.ctx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(this.uiGain);
+            source.start();
+        } else {
+            // Procedural fallback if physical files not provided
+            this._playProceduralFallback(name);
+        }
+    }
+
+    _playProceduralFallback(name) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain).connect(this.uiGain);
+        
+        const now = this.ctx.currentTime;
+        if (name === 'ui_hover') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (name === 'ui_click' || name === 'chart_tick') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1000, now);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now); osc.stop(now + 0.08);
+        } else if (name === 'error_buzz') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, now);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (name === 'add_manifesto') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(523, now);
+            osc.frequency.exponentialRampToValueAtTime(1046, now + 0.15); // ascending
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
+        } else if (name === 'sabotage_fuse') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.5); // dropping pitch bomb
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc.start(now); osc.stop(now + 0.6);
+        } else if (name === 'round_chime') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, now); // A4
+            osc.frequency.setValueAtTime(554, now + 0.1); // C#5
+            osc.frequency.setValueAtTime(659, now + 0.2); // E5
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+            osc.start(now); osc.stop(now + 0.8);
+        }
+    }
+
+    async playBGM(name, loop = true) {
+        if (gameState.isMuted) return;
+        this._initCtx();
+        if (this.ctx.state === 'suspended') {
+            try { await this.ctx.resume(); } catch (e) { return; }
+        }
+        if (this.ctx.state !== 'running') return;
+
+        if (this.activeBGM) {
+            if (this.activeBGM.stop) this.activeBGM.stop();
+        }
+
+        const buffer = this.buffers[name];
+        if (!buffer) {
+            console.warn(`[SoundManager] Missing BGM track ${name}. Using procedural synth pad fallback.`);
+            this._playProceduralBGM();
+            return;
+        }
+
+        const source = this.ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = loop;
+        source.connect(this.bgmGain);
+        source.start();
+        this.activeBGM = source;
+    }
+
+    _playProceduralBGM() {
+        const frequencies = [65.41, 164.81, 196.00, 246.94]; // Cmaj7 open drone (C2, E3, G3, B3)
+        const oscillators = [];
+        
+        const masterPadGain = this.ctx.createGain();
+        // Very low volume, slow 4 second fade in for smoothness
+        masterPadGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        masterPadGain.gain.linearRampToValueAtTime(0.04, this.ctx.currentTime + 4);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 600; // Muffeled, warm, Sega ambient tone
+        
+        masterPadGain.connect(filter);
+        filter.connect(this.bgmGain);
+
+        frequencies.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            osc.type = 'triangle';
+            // Detune slightly for chorusing effect
+            osc.frequency.value = freq + (idx * 0.5); 
+            osc.connect(masterPadGain);
+            osc.start();
+            oscillators.push(osc);
+        });
+
+        // Store a custom stopper interface for the fallback BGM
+        this.activeBGM = {
+            isProcedural: true,
+            stop: () => {
+                try {
+                    masterPadGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2);
+                    setTimeout(() => {
+                        oscillators.forEach(o => o.stop());
+                    }, 2000);
+                } catch(e) {}
+            }
+        };
+    }
+
+    async playAmbient(name) {
+        if (gameState.isMuted) return;
+        this._initCtx();
+        if (this.ctx.state === 'suspended') {
+            try { await this.ctx.resume(); } catch (e) { return; }
+        }
+        if (this.ctx.state !== 'running') return;
+
+        if (this.activeAmbient) return; // Already playing
+
+        const buffer = this.buffers[name];
+        if (!buffer) {
+            console.warn(`[SoundManager] Missing Ambient track ${name}. Using procedural river noise fallback.`);
+            this._playProceduralAmbient();
+            return;
+        }
+
+        const source = this.ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        
+        // Custom ambient gain for fade ins/outs
+        const ambientGain = this.ctx.createGain();
+        ambientGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        ambientGain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + 3);
+        
+        source.connect(ambientGain).connect(this.masterGain);
+        source.start();
+        
+        this.activeAmbient = { source, gainNode: ambientGain };
+    }
+
+    _playProceduralAmbient() {
+        // Synthesizing water flow using a low-pass filtered white noise
+        const bufferSize = this.ctx.sampleRate * 2; 
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = this.ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 250; // Deep water rumble frequency
+
+        const ambientGain = this.ctx.createGain();
+        ambientGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        ambientGain.gain.linearRampToValueAtTime(0.06, this.ctx.currentTime + 3); // Very quiet
+
+        whiteNoise.connect(filter);
+        filter.connect(ambientGain);
+        ambientGain.connect(this.masterGain);
+        whiteNoise.start();
+
+        this.activeAmbient = { source: whiteNoise, gainNode: ambientGain };
+    }
+
+    stopAmbient() {
+        if (!this.activeAmbient) return;
+        
+        const { source, gainNode } = this.activeAmbient;
+        if(gainNode && source) {
+            try {
+                gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 2);
+                setTimeout(() => {
+                    source.stop();
+                    this.activeAmbient = null;
+                }, 2000);
+            } catch(e){}
+        } else {
+            this.activeAmbient = null;
+        }
+    }
+}
+
+const soundManager = new SoundManager();
+
+// Backwards compatibility for legacy UI calls
+window.SoundFX = {
+    dialogueOpen: () => soundManager.play('ui_hover'),
+    buttonClick: () => soundManager.play('ui_click'),
+    error: () => soundManager.play('error_buzz'),
+    success: () => soundManager.play('round_chime')
 };
 
 // ── DOM References ──
@@ -174,7 +415,12 @@ const DOM = {
     dialogueContinue: document.getElementById('dialogueContinue'),
     dialogueAudioIndicator: document.getElementById('dialogueAudioIndicator'),
     // Mute button
-    muteBtn: document.getElementById('muteBtn')
+    muteBtn: document.getElementById('muteBtn'),
+    // Start Screen Elements
+    startScreenOverlay: document.getElementById('startScreenOverlay'),
+    startSinglePlayerBtn: document.getElementById('startSinglePlayerBtn'),
+    startMultiPlayerBtn: document.getElementById('startMultiPlayerBtn'),
+    startSoundToggleBtn: document.getElementById('startSoundToggleBtn')
 };
 
 
@@ -320,7 +566,14 @@ class PixelParticleSystem {
 //  INITIALIZATION
 // ══════════════════════════════════
 
-async function init() {
+async function startSinglePlayer() {
+    // Initialize required background audio
+    await soundManager.loadAssets();
+    soundManager.playBGM('bgm_village');
+
+    // Hide start screen
+    DOM.startScreenOverlay.classList.remove('active');
+
     // Player Setup
     let pName = localStorage.getItem('playerName');
     let pParty = localStorage.getItem('playerParty');
@@ -328,10 +581,10 @@ async function init() {
         pName = prompt("Enter your Candidate Name:", "Player") || "Player";
         pParty = prompt("Enter your Party Name:", "Jan Seva Party") || "Jan Seva Party";
         let pSecret = prompt("Enter your Candidate's Dark Secret (Optional - Leave blank for default):");
-        
+
         localStorage.setItem('playerName', pName);
         localStorage.setItem('playerParty', pParty);
-        
+
         if (pSecret && pSecret.trim() !== "") {
             try {
                 // Background update without blocking UI
@@ -340,7 +593,7 @@ async function init() {
                     body: { weakness_desc: pSecret.trim() },
                     timeoutMs: 5000
                 }).catch(e => console.warn("Failed to set weakness", e));
-            } catch(e) {}
+            } catch (e) { }
         }
     }
     gameState.candidate.name = pName;
@@ -377,10 +630,6 @@ async function init() {
         DOM.roundTrackerText.textContent = `RND 5/5`;
     }
 
-    // Start pixel particles
-    const particleSystem = new PixelParticleSystem(DOM.pixelCanvas);
-    particleSystem.start();
-
     // Bind UI events
     bindEvents();
 
@@ -401,7 +650,7 @@ async function init() {
     // Render UI
     renderManifesto();
     renderBarChart();
-    
+
     // Evaluate if game already ended previously
     if (gameState.turnNumber > 5) {
         evaluateElectionResults();
@@ -422,9 +671,9 @@ async function loadVoiceMap() {
 /** Load all manifestos from /api/all-manifestos */
 async function loadManifestoBank() {
     const allBank = await apiFetch('/api/all-manifestos');
-    
+
     gameState.manifestoBank = allBank.filter(m => m.used_by === null);
-    
+
     gameState.npcManifestos = { 0: [], 1: [], 2: [], 3: [] };
     for (const m of allBank) {
         if (m.used_by !== null && m.used_by < PLAYER_CANDIDATE_ID) {
@@ -437,7 +686,7 @@ async function loadManifestoBank() {
 async function loadVoterStanding() {
     try {
         const allSharesRaw = await fetchAllShares();
-        
+
         gameState.allShares = {};
         allSharesRaw.forEach(s => {
             if (!gameState.allShares[s.group_id]) {
@@ -454,10 +703,10 @@ async function loadVoterStanding() {
         gameState.standings = await fetchTotalStanding();
     } catch (err) {
         console.warn('Could not fetch granular shares from server, using fallback');
-        
+
         const standings = await fetchTotalStanding();
         const playerStanding = standings.find(s => s._id === PLAYER_CANDIDATE_ID);
-        
+
         if (Object.keys(gameState.allShares).length === 0) {
             gameState.voterShares = VOTER_GROUPS.map(group => ({
                 ...group,
@@ -634,6 +883,9 @@ function renderBarChart() {
             DOM.playerTotalShares.style.color = '#f8f8f8';
         }
     }
+
+    // Play a single chart tick when bars are rapidly redrawn
+    soundManager.play('chart_tick');
 }
 
 
@@ -699,7 +951,7 @@ function bindEvents() {
     DOM.popupOverlay.addEventListener('click', (e) => {
         if (e.target === DOM.popupOverlay) closePopup();
     });
-    
+
     // NPC Manifesto Overlay Closers
     DOM.npcManifestoCloseBtn.addEventListener('click', () => {
         DOM.npcManifestoOverlay.classList.remove('active');
@@ -773,18 +1025,20 @@ function bindEvents() {
         if (gameState.isMuted) {
             DOM.muteBtn.textContent = '🔇';
             DOM.muteBtn.classList.add('muted');
+            soundManager._updateMuteState();
         }
         DOM.muteBtn.addEventListener('click', () => {
-            gameState.isMuted = !gameState.isMuted;
+            soundManager.toggleMute();
             localStorage.setItem('gameMuted', gameState.isMuted);
             DOM.muteBtn.textContent = gameState.isMuted ? '🔇' : '🔊';
             DOM.muteBtn.classList.toggle('muted', gameState.isMuted);
-            // Stop currently playing audio if muted
-            if (gameState.isMuted && gameState.currentAudio) {
-                gameState.currentAudio.pause();
-                gameState.currentAudio = null;
-            }
             showToast(gameState.isMuted ? '🔇' : '🔊', gameState.isMuted ? 'Sound muted' : 'Sound enabled');
+            
+            if (DOM.startSoundToggleBtn) {
+                DOM.startSoundToggleBtn.innerHTML = gameState.isMuted
+                    ? '<span class="btn-icon">🔇</span> SOUND: OFF'
+                    : '<span class="btn-icon">🔊</span> SOUND: ON';
+            }
         });
     }
 }
@@ -793,7 +1047,7 @@ async function restartGameAction() {
     // Close the restart overlay immediately so user sees feedback
     DOM.restartOverlay.classList.remove('active');
     showToast('🔄', 'Restarting game...');
-    
+
     try {
         await apiFetch('/api/restart-game', { method: 'POST', timeoutMs: 30000 });
         // Clear ALL localStorage (coins, turn, name, party, mute, etc.)
@@ -901,7 +1155,7 @@ function renderOpponentsSidebar() {
         card.addEventListener('click', () => {
             openNpcManifesto(npc.id);
         });
-        
+
         DOM.sidebarScroll.appendChild(card);
     });
 }
@@ -915,7 +1169,7 @@ function openNpcManifesto(npcId) {
     const npc = NPC_CANDIDATES.find(n => n.id === npcId);
     DOM.npcManifestoTitle.textContent = `${npc.name.toUpperCase()} MANIFESTOS`;
     DOM.npcManifestoScrollArea.innerHTML = '';
-    
+
     const theirManifestos = gameState.npcManifestos[npcId] || [];
     if (theirManifestos.length === 0) {
         const empty = document.createElement('div');
@@ -938,27 +1192,27 @@ function openNpcManifesto(npcId) {
             DOM.npcManifestoScrollArea.appendChild(mCard);
         });
     }
-    
+
     DOM.npcManifestoOverlay.classList.add('active');
 }
 
 async function animateNpcTurns(npcActions) {
     DOM.turnAnnouncerOverlay.classList.add('active');
-    
+
     for (const action of npcActions) {
         const npc = NPC_CANDIDATES.find(n => n.id === action.candidate_id);
         if (!npc) continue;
-        
+
         DOM.announcerName.textContent = npc.name.toUpperCase();
         DOM.announcerName.style.color = npc.color;
-        
+
         if (action.type === "manifesto" || !action.type) {
-            SoundFX.turnStart();
+            soundManager.play('ui_hover');
             DOM.announcerAction.textContent = "is thinking...";
             await sleep(800);
-            
+
             DOM.announcerAction.innerHTML = `Chose: <br><br> <span style="color:#fff; font-size:12px;">${action.title}</span> <br><br> <span style="color:#e04848">(+${action.shift_amount}% for ${getGroupName(action.group_id)})</span>`;
-            
+
             if (!gameState.npcManifestos[npc.id]) {
                 gameState.npcManifestos[npc.id] = [];
             }
@@ -970,7 +1224,7 @@ async function animateNpcTurns(npcActions) {
                 shift_amount: action.shift_amount
             });
             await sleep(1500);
-            
+
             // If this NPC action has dialogue, show the dialogue popup with TTS
             if (action.dialogue && action.dialogue.trim()) {
                 DOM.turnAnnouncerOverlay.classList.remove('active');
@@ -987,19 +1241,19 @@ async function animateNpcTurns(npcActions) {
                 await sleep(1000);
             }
         } else if (action.type === "sabotage") {
-            SoundFX.sabotageLaunch();
+            soundManager.play('sabotage_fuse');
             let vicName = "Someone";
             if (action.target_id === 4) vicName = "YOU";
             else {
                 let vicData = NPC_CANDIDATES.find(n => n.id === action.target_id);
                 if (vicData) vicName = vicData.name;
             }
-            
+
             DOM.announcerAction.innerHTML = `<span style="color:#e04848; font-size:12px;">💣 launched SABOTAGE against ${vicName}!</span>`;
             await sleep(1500);
-            
+
             let sabText = `<br><span style="color:#999; font-style:italic; font-size:9px;">"${action.sabotage_text || ''}"</span><br><br>`;
-            
+
             if (action.blocked) {
                 DOM.announcerAction.innerHTML += sabText + `<span style="color:#48b848; font-size:14px; font-weight:bold;">⚖️ BLOCKED!</span><br><span style="color:#888; font-size:9px;">Election Commissioner: ${action.reason || 'Code of conduct violation'}</span>`;
             } else {
@@ -1009,7 +1263,7 @@ async function animateNpcTurns(npcActions) {
             await sleep(4000);
         }
     }
-    
+
     DOM.turnAnnouncerOverlay.classList.remove('active');
 }
 
@@ -1022,7 +1276,7 @@ async function addToCampaign() {
     const customText = DOM.customManifestoInput.value.trim();
     let addedCount = 0;
     const apiSyncTasks = []; // Background API calls
-    
+
     // Check if empty
     if (gameState.selectedPopupOptions.length === 0 && !customText) {
         DOM.popupActionBtn.style.animation = 'shake 0.4s ease-out';
@@ -1033,6 +1287,7 @@ async function addToCampaign() {
     // Check if enough coins
     let pendingCount = gameState.selectedPopupOptions.length + (customText ? 1 : 0);
     if (gameState.candidate.coins < pendingCount * 50) {
+        soundManager.play('error_buzz');
         showToast('❌', 'Not enough coins!');
         return;
     }
@@ -1102,14 +1357,13 @@ async function addToCampaign() {
             renderManifesto(true);
             renderBarChart();
             closePopup();
-            SoundFX.manifestoAdd();
+            soundManager.play('add_manifesto');
             showToast('⚔️', `${addedCount} manifesto${addedCount > 1 ? 's' : ''} deployed!`);
 
             // Update coin count
             gameState.candidate.coins -= addedCount * 50;
             localStorage.setItem('playerCoins', gameState.candidate.coins);
             DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
-            SoundFX.coinSpend();
 
             // Show dialogue popup for the LAST selected manifesto with TTS
             const lastOption = gameState.manifestoBank.length > 0 ? null : null;
@@ -1117,7 +1371,7 @@ async function addToCampaign() {
             // Find the full manifesto data from the original bank
             const allBank = await apiFetch('/api/all-manifestos').catch(() => []);
             const lastManifesto = allBank.find(m => m.id === lastSelectedId);
-            
+
             if (lastManifesto && lastManifesto.dialogue && lastManifesto.dialogue.trim()) {
                 await showDialoguePopup(
                     gameState.candidate.name,
@@ -1131,7 +1385,7 @@ async function addToCampaign() {
 
             // Let API calls finish
             await Promise.allSettled(apiSyncTasks);
-            
+
             // NPC Turn
             try {
                 const npcRes = await apiFetch('/api/end-turn', { method: 'POST', timeoutMs: 60000 });
@@ -1141,12 +1395,12 @@ async function addToCampaign() {
             } catch (err) {
                 console.error("NPC turn failed:", err);
             }
-            
+
             // Re-sync UI state after ALL animations/errors
             await loadVoterStanding();
             renderBarChart();
             renderOpponentsSidebar();
-            
+
             // Gain round reward
             gameState.candidate.coins += 25;
             localStorage.setItem('playerCoins', gameState.candidate.coins);
@@ -1156,7 +1410,7 @@ async function addToCampaign() {
             // Track & evaluate turn limit
             gameState.turnNumber++;
             localStorage.setItem('turnNumber', gameState.turnNumber);
-            
+
             if (gameState.turnNumber <= 5) {
                 DOM.roundTrackerText.textContent = `RND ${gameState.turnNumber}/5`;
             } else {
@@ -1457,7 +1711,7 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
 
             // Dismiss completely
             dismissed = true;
-            SoundFX.click();
+            soundManager.play('ui_click');
             DOM.dialogueOverlay.classList.remove('active');
             DOM.dialogueOverlay.removeEventListener('click', onDismiss);
             resolve();
@@ -1472,27 +1726,27 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
 // ══════════════════════════════════
 
 function evaluateElectionResults() {
-    const candidateTotals = []; 
-    
+    const candidateTotals = [];
+
     // NPCs (0 to 3) + Player (4)
-    for(let cid = 0; cid <= 4; cid++) {
+    for (let cid = 0; cid <= 4; cid++) {
         let total = 0;
         let maxGroup = 0;
-        if(cid === PLAYER_CANDIDATE_ID) {
+        if (cid === PLAYER_CANDIDATE_ID) {
             gameState.voterShares.forEach(g => {
                 total += g.percent;
-                if(g.percent > maxGroup) maxGroup = g.percent;
+                if (g.percent > maxGroup) maxGroup = g.percent;
             });
         } else {
             VOTER_GROUPS.forEach(g => {
                 const s = gameState.allShares[g.id]?.[cid] ?? INITIAL_SHARE;
                 total += s;
-                if(s > maxGroup) maxGroup = s;
+                if (s > maxGroup) maxGroup = s;
             });
         }
-        
-        let pName = cid === PLAYER_CANDIDATE_ID ? gameState.candidate.name + " (You)" : NPC_CANDIDATES.find(n=>n.id === cid).name;
-        
+
+        let pName = cid === PLAYER_CANDIDATE_ID ? gameState.candidate.name + " (You)" : NPC_CANDIDATES.find(n => n.id === cid).name;
+
         candidateTotals.push({
             id: cid,
             name: pName,
@@ -1503,30 +1757,30 @@ function evaluateElectionResults() {
 
     // Sort by absolute highest total, tiebreak with highest peak
     candidateTotals.sort((a, b) => {
-        if(b.total !== a.total) return b.total - a.total; 
-        return b.maxGroup - a.maxGroup; 
+        if (b.total !== a.total) return b.total - a.total;
+        return b.maxGroup - a.maxGroup;
     });
 
     let winnerText = "";
     let subText = "";
     let boxColor = "";
-    
+
     // Check coalition tie
-    if(candidateTotals[0].total === candidateTotals[1].total && candidateTotals[0].maxGroup === candidateTotals[1].maxGroup) {
-        let playerIsTied1st = candidateTotals[0].total === candidateTotals.find(c => c.id === PLAYER_CANDIDATE_ID).total && 
-                              candidateTotals[0].maxGroup === candidateTotals.find(c => c.id === PLAYER_CANDIDATE_ID).maxGroup;
-        
+    if (candidateTotals[0].total === candidateTotals[1].total && candidateTotals[0].maxGroup === candidateTotals[1].maxGroup) {
+        let playerIsTied1st = candidateTotals[0].total === candidateTotals.find(c => c.id === PLAYER_CANDIDATE_ID).total &&
+            candidateTotals[0].maxGroup === candidateTotals.find(c => c.id === PLAYER_CANDIDATE_ID).maxGroup;
+
         if (playerIsTied1st) {
-             winnerText = "SABKA SAATH SABKA VIKAS";
-             subText = "Coalition Government! You tied for first place.";
-             boxColor = "#a0a0f0";
+            winnerText = "SABKA SAATH SABKA VIKAS";
+            subText = "Coalition Government! You tied for first place.";
+            boxColor = "#a0a0f0";
         } else {
-             winnerText = "DEFEATED";
-             subText = `${candidateTotals[0].name.replace(" (You)", "")} led a coalition against you!`;
-             boxColor = "#e04848";
+            winnerText = "DEFEATED";
+            subText = `${candidateTotals[0].name.replace(" (You)", "")} led a coalition against you!`;
+            boxColor = "#e04848";
         }
     } else {
-        if(candidateTotals[0].id === PLAYER_CANDIDATE_ID) {
+        if (candidateTotals[0].id === PLAYER_CANDIDATE_ID) {
             winnerText = "VICTORY!";
             subText = "You won the Panchayat Election!";
             boxColor = "#48b848";
@@ -1536,11 +1790,11 @@ function evaluateElectionResults() {
             boxColor = "#e04848";
         }
     }
-    
+
     DOM.endGameWinnerBox.textContent = winnerText;
     DOM.endGameWinnerBox.style.color = boxColor;
     DOM.endGameSubtext.textContent = subText;
-    
+
     DOM.endGameStandings.innerHTML = '';
     candidateTotals.forEach((c, idx) => {
         const row = document.createElement('div');
@@ -1555,9 +1809,9 @@ function evaluateElectionResults() {
 
     // Play victory/defeat sound
     if (candidateTotals[0].id === PLAYER_CANDIDATE_ID) {
-        SoundFX.victory();
+        soundManager.play('round_chime');
     } else {
-        SoundFX.defeat();
+        soundManager.play('error_buzz');
     }
 }
 
@@ -1573,6 +1827,7 @@ function evaluateElectionResults() {
 
 function openSabotagePopup() {
     if (gameState.candidate.coins < 75) {
+        soundManager.play('error_buzz');
         showToast('❌', 'Need 75 coins for sabotage!');
         return;
     }
@@ -1587,13 +1842,14 @@ function closeSabotagePopup() {
 async function executeSabotage() {
     const targetId = parseInt(DOM.sabotageTargetSelect.value);
     const sabotageText = DOM.sabotagePromptInput.value.trim();
-    
+
     if (!sabotageText) {
         showToast('❌', 'Write your sabotage attack!');
         return;
     }
-    
+
     if (gameState.candidate.coins < 75) {
+        soundManager.play('error_buzz');
         showToast('❌', 'Not enough coins!');
         return;
     }
@@ -1601,16 +1857,16 @@ async function executeSabotage() {
     // Disable button during API call
     DOM.sabotageSubmitBtn.disabled = true;
     DOM.sabotageSubmitBtn.querySelector('.popup-action-text').textContent = '⏳ SENDING...';
-    
+
     try {
         const result = await apiFetch('/api/player-sabotage', {
             method: 'POST',
             body: JSON.stringify({ target_id: targetId, sabotage_prompt: sabotageText }),
             timeoutMs: 30000
         });
-        
+
         closeSabotagePopup();
-        
+
         // Deduct coins locally
         gameState.candidate.coins -= 75;
         localStorage.setItem('playerCoins', gameState.candidate.coins);
@@ -1630,7 +1886,7 @@ async function executeSabotage() {
             DOM.sabotageResultDialogue.textContent = result.dialogue || '';
         }
         DOM.sabotageResultOverlay.classList.add('active');
-        
+
         // Re-sync shares after sabotage
         await loadVoterStanding();
         renderBarChart();
@@ -1662,11 +1918,12 @@ async function executeSabotage() {
         localStorage.setItem('turnNumber', gameState.turnNumber);
         if (gameState.turnNumber <= 5) {
             DOM.roundTrackerText.textContent = `RND ${gameState.turnNumber}/5`;
+            soundManager.play('round_chime');
         } else {
             DOM.roundTrackerText.textContent = `RND 5/5`;
             setTimeout(() => evaluateElectionResults(), 1000);
         }
-        
+
     } catch (err) {
         console.error('Sabotage error:', err);
         showToast('❌', 'Sabotage failed! Try again.');
@@ -1688,5 +1945,66 @@ if (DOM.sabotageResultCloseBtn) DOM.sabotageResultCloseBtn.addEventListener('cli
 // ══════════════════════════════════
 //  BOOT
 // ══════════════════════════════════
+
+function init() {
+    // Attempt to load background audio assets silently
+    soundManager.loadAssets();
+
+    // Start pixel particles in the background immediately
+    const particleSystem = new PixelParticleSystem(DOM.pixelCanvas);
+    particleSystem.start();
+
+    // Global UI hovers and standard clicks
+    const uiElements = document.querySelectorAll('.start-menu-btn, .settings-btn, .coc-btn, .hamburger-btn, .sidebar-close-btn, .add-manifesto-btn, .popup-close-btn, .popup-action-btn');
+    uiElements.forEach(btn => {
+        btn.addEventListener('mouseenter', () => soundManager.play('ui_hover'));
+        btn.addEventListener('click', () => {
+            // Only play standard click if it's NOT a custom mechanic button (sabotage/manifesto handled independently)
+            if(btn.id !== 'addManifestoBtn' && btn.id !== 'sabotageBtn') {
+                soundManager.play('ui_click');
+            }
+        });
+    });
+
+    // Bind Start Screen Events
+    if (DOM.startSinglePlayerBtn) {
+        DOM.startSinglePlayerBtn.addEventListener('click', () => {
+            soundManager.play('ui_click');
+            
+            // Execute the original start logic if it exists (handles game startup)
+            if (typeof startSinglePlayer === 'function') {
+                startSinglePlayer();
+            } else {
+                // If startSinglePlayer was removed by user layout rollback, just dismiss the overlay
+                DOM.startScreenOverlay.style.opacity = '0';
+                setTimeout(() => DOM.startScreenOverlay.style.display = 'none', 500);
+            }
+        });
+    }
+
+    if (DOM.startMultiPlayerBtn) {
+        DOM.startMultiPlayerBtn.addEventListener('click', () => {
+            showToast('🌐', 'Multiplayer coming soon!');
+        });
+    }
+
+    if (DOM.startSoundToggleBtn) {
+        DOM.startSoundToggleBtn.addEventListener('click', () => {
+            soundManager.toggleMute();
+            DOM.startSoundToggleBtn.innerHTML = gameState.isMuted
+                ? '<span class="btn-icon">🔇</span> SOUND: OFF'
+                : '<span class="btn-icon">🔊</span> SOUND: ON';
+            if (DOM.muteBtn) {
+                if (gameState.isMuted) DOM.muteBtn.classList.add('muted');
+                else DOM.muteBtn.classList.remove('muted');
+            }
+        });
+    }
+    // Note: DOM.muteBtn logic is handled earlier in bindEvents()
+    // Set initial mute matching state
+    if (gameState.isMuted && DOM.startSoundToggleBtn) {
+        DOM.startSoundToggleBtn.innerHTML = '<span class="btn-icon">🔇</span> SOUND: OFF';
+    }
+}
 
 document.addEventListener('DOMContentLoaded', init);

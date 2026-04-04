@@ -98,7 +98,7 @@ ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1"
 CHARACTER_VOICES = {
     0: "76erronSBRzQKnz10Li9",  # Vikas Purush  → Male
     1: "76erronSBRzQKnz10Li9",  # Dharma Rakshak → Male
-    2: "K2Byg54sHB1oHegvENtI",  # Jan Neta      → Female
+    2: "76erronSBRzQKnz10Li9",  # Jan Neta      → Male
     3: "K2Byg54sHB1oHegvENtI",  # Mukti Devi    → Female
     4: "76erronSBRzQKnz10Li9",  # Player        → Male
 }
