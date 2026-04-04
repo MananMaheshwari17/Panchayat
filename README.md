@@ -32,11 +32,6 @@ A **turn-based political simulation** where you compete as an independent candid
 
 The twist: **Every political action is validated by ArmorIQ Shield** - a cryptographic enforcement layer that blocks communal hate speech, personal attacks, fake claims, voter intimidation, and bribery. If an AI (or you) crosses the line, the Election Commission catches it.
 
-<p align="center">
-  <img src="client/assets/readme2.png" alt="Panchayat AI Screenshot 2" width="600" />
-  <br/>
-  <img src="client/assets/readme1.png" alt="Panchayat AI Screenshot 1" width="600" />
-</p>
 
 ---
 
