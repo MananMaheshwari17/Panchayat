@@ -1,0 +1,13 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.env.local
+.DS_Store
+*.log
+groq_debug.txt
+bridge/
+.gemini/
