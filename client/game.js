@@ -40,6 +40,7 @@ const gameState = {
     manifestoBank: [],     // Available manifestos from backend
     voterShares: [],       // Player's share per voter group (what bar chart shows)
     allShares: {},         // Full share table: { groupId: { candidateId: share } }
+    npcManifestos: { 0: [], 1: [], 2: [], 3: [] },
     turnNumber: 0,
     selectedPopupOptions: []
 };
@@ -69,7 +70,16 @@ const DOM = {
     confirmRestartBtn: document.getElementById('confirmRestartBtn'),
     cancelRestartBtn: document.getElementById('cancelRestartBtn'),
     candidateName: document.getElementById('candidateName'),
-    candidateParty: document.getElementById('candidateParty')
+    candidateParty: document.getElementById('candidateParty'),
+    npcManifestoOverlay: document.getElementById('npcManifestoOverlay'),
+    npcManifestoPanel: document.getElementById('npcManifestoPanel'),
+    npcManifestoCloseBtn: document.getElementById('npcManifestoCloseBtn'),
+    npcManifestoTitle: document.getElementById('npcManifestoTitle'),
+    npcManifestoScrollArea: document.getElementById('npcManifestoScrollArea'),
+    turnAnnouncerOverlay: document.getElementById('turnAnnouncerOverlay'),
+    announcerName: document.getElementById('announcerName'),
+    announcerAction: document.getElementById('announcerAction'),
+    playerTotalShares: document.getElementById('playerTotalShares')
 };
 
 
@@ -101,10 +111,7 @@ async function apiFetch(endpoint, options = {}) {
     }
 }
 
-/** GET /api/manifesto-bank → available manifestos */
-async function fetchManifestoBank() {
-    return apiFetch('/api/manifesto-bank');
-}
+/** API logic merged into loadManifestoBank below */
 
 /** POST /api/apply-manifesto → apply a manifesto for player */
 async function applyManifesto(groupId, shiftAmount) {
@@ -266,10 +273,18 @@ async function init() {
     renderBarChart();
 }
 
-/** Load available manifestos from /api/manifesto-bank */
+/** Load all manifestos from /api/all-manifestos */
 async function loadManifestoBank() {
-    const bank = await fetchManifestoBank();
-    gameState.manifestoBank = bank;
+    const allBank = await apiFetch('/api/all-manifestos');
+    
+    gameState.manifestoBank = allBank.filter(m => m.used_by === null);
+    
+    gameState.npcManifestos = { 0: [], 1: [], 2: [], 3: [] };
+    for (const m of allBank) {
+        if (m.used_by !== null && m.used_by < PLAYER_CANDIDATE_ID) {
+            gameState.npcManifestos[m.used_by].push(m);
+        }
+    }
 }
 
 /** Load voter standing from /api/total-standing and /api/all-shares */
@@ -436,7 +451,10 @@ function renderBarChart() {
         ? gameState.voterShares
         : VOTER_GROUPS.map(g => ({ ...g, percent: INITIAL_SHARE }));
 
+    let totalPlayerShare = 0;
+
     voterData.forEach((voter, index) => {
+        totalPlayerShare += voter.percent;
         const group = document.createElement('div');
         group.className = 'bar-group';
 
@@ -458,6 +476,18 @@ function renderBarChart() {
 
         DOM.barChart.appendChild(group);
     });
+
+    if (DOM.playerTotalShares) {
+        DOM.playerTotalShares.textContent = `${totalPlayerShare.toFixed(2)}% TOTAL`;
+        // Make it dynamic based on threshold
+        if (totalPlayerShare > 25.0) {
+            DOM.playerTotalShares.style.color = '#48b848';
+        } else if (totalPlayerShare < 15.0) {
+            DOM.playerTotalShares.style.color = '#e04848';
+        } else {
+            DOM.playerTotalShares.style.color = '#f8f8f8';
+        }
+    }
 }
 
 
@@ -523,9 +553,23 @@ function bindEvents() {
     DOM.popupOverlay.addEventListener('click', (e) => {
         if (e.target === DOM.popupOverlay) closePopup();
     });
+    
+    // NPC Manifesto Overlay Closers
+    DOM.npcManifestoCloseBtn.addEventListener('click', () => {
+        DOM.npcManifestoOverlay.classList.remove('active');
+    });
+    DOM.npcManifestoOverlay.addEventListener('click', (e) => {
+        if (e.target === DOM.npcManifestoOverlay) {
+            DOM.npcManifestoOverlay.classList.remove('active');
+        }
+    });
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && DOM.popupOverlay.classList.contains('active')) {
             closePopup();
+        }
+        if (e.key === 'Escape' && DOM.npcManifestoOverlay.classList.contains('active')) {
+            DOM.npcManifestoOverlay.classList.remove('active');
         }
         if (e.key === 'Escape' && DOM.opponentsSidebar.classList.contains('open')) {
             closeSidebar();
@@ -658,8 +702,82 @@ function renderOpponentsSidebar() {
         });
 
         card.appendChild(barsContainer);
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+            openNpcManifesto(npc.id);
+        });
+        
         DOM.sidebarScroll.appendChild(card);
     });
+}
+
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function openNpcManifesto(npcId) {
+    const npc = NPC_CANDIDATES.find(n => n.id === npcId);
+    DOM.npcManifestoTitle.textContent = `${npc.name.toUpperCase()} MANIFESTOS`;
+    DOM.npcManifestoScrollArea.innerHTML = '';
+    
+    const theirManifestos = gameState.npcManifestos[npcId] || [];
+    if (theirManifestos.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'manifesto-item';
+        empty.innerHTML = `<div class="manifesto-details"><div class="manifesto-title">No promises yet</div></div>`;
+        DOM.npcManifestoScrollArea.appendChild(empty);
+    } else {
+        theirManifestos.forEach((item, index) => {
+            const mCard = document.createElement('div');
+            mCard.className = 'manifesto-item';
+            const targetGroup = getGroupName(item.target_group_id);
+            mCard.innerHTML = `
+                <div class="manifesto-icon">${getGroupIcon(item.target_group_id)}</div>
+                <div class="manifesto-details">
+                    <div class="manifesto-title">${item.title}</div>
+                    <div class="manifesto-desc">${item.description}</div>
+                    <div class="manifesto-desc" style="color: #e04848; margin-top: 2px;">► ${targetGroup} (+${item.shift_amount}%)</div>
+                </div>
+            `;
+            DOM.npcManifestoScrollArea.appendChild(mCard);
+        });
+    }
+    
+    DOM.npcManifestoOverlay.classList.add('active');
+}
+
+async function animateNpcTurns(npcActions) {
+    DOM.turnAnnouncerOverlay.classList.add('active');
+    
+    for (const action of npcActions) {
+        const npc = NPC_CANDIDATES.find(n => n.id === action.candidate_id);
+        if (!npc) continue;
+        
+        DOM.announcerName.textContent = npc.name.toUpperCase();
+        DOM.announcerName.style.color = npc.color;
+        DOM.announcerAction.textContent = "is thinking...";
+        
+        await sleep(800); // Wait for suspense
+        
+        DOM.announcerAction.innerHTML = `Chose: <br><br> <span style="color:#fff; font-size:12px;">${action.title}</span> <br><br> <span style="color:#e04848">(+${action.shift_amount}% for ${getGroupName(action.group_id)})</span>`;
+        
+        // Save to NPC state memory for click-to-view feature
+        if (!gameState.npcManifestos[npc.id]) {
+            gameState.npcManifestos[npc.id] = [];
+        }
+        gameState.npcManifestos[npc.id].push({
+            id: action.manifesto_id,
+            title: action.title,
+            description: "(Opponent Campaign Promise)",
+            target_group_id: action.group_id,
+            shift_amount: action.shift_amount
+        });
+        
+        await sleep(2500); // Time to read before moving to next opponent
+    }
+    
+    DOM.turnAnnouncerOverlay.classList.remove('active');
 }
 
 
@@ -751,7 +869,7 @@ async function addToCampaign() {
             try {
                 const npcRes = await apiFetch('/api/end-turn', { method: 'POST', timeoutMs: 15000 });
                 if (npcRes.npc_actions && npcRes.npc_actions.length > 0) {
-                    showToast('⚔️', 'Opponents have made their moves!');
+                    await animateNpcTurns(npcRes.npc_actions);
                     await loadVoterStanding();
                     renderBarChart();
                     renderOpponentsSidebar();

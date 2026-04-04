@@ -111,8 +111,9 @@
 
             <!-- RIGHT PANEL: Voter Demographics -->
             <section class="panel-card demographics-panel" id="demographicsPanel">
-                <div class="panel-card-header">
+                <div class="panel-card-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="panel-card-title">📊 VOTERS</span>
+                    <span class="panel-card-title" id="playerTotalShares" style="color: #48b848; font-size: 10px;">20.00%</span>
                 </div>
                 <div class="panel-card-body">
                     <div class="demographics-column" id="demographicsColumn">
@@ -153,6 +154,29 @@
             <button class="popup-action-btn" id="popupActionBtn">
                 <span class="popup-action-text">⚔ ADD TO CAMPAIGN</span>
             </button>
+        </div>
+    </div>
+
+    <!-- ═══ NPC MANIFESTO VIEWER POPUP ═══ -->
+    <div class="popup-overlay" id="npcManifestoOverlay">
+        <div class="popup-panel" id="npcManifestoPanel">
+            <button class="popup-close-btn" id="npcManifestoCloseBtn">✕</button>
+            <div class="panel-card-header" style="margin-bottom: 10px;">
+                <span class="panel-card-title" id="npcManifestoTitle">OPPONENT MANIFESTO</span>
+            </div>
+            <div class="popup-scroll-area manifesto-column" id="npcManifestoScrollArea" style="min-height: 200px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TURN ANNOUNCER POPUP ═══ -->
+    <div class="popup-overlay" id="turnAnnouncerOverlay">
+        <div class="popup-panel" style="max-height: 250px; text-align: center; border: 4px solid #f0c040;">
+            <div class="panel-card-title" id="announcerName" style="color: #f0c040; margin-bottom: 20px; font-size: 14px;">Candidate Name</div>
+            <p id="announcerAction" style="font-family: 'Press Start 2P'; font-size: 10px; color: #fff; line-height: 1.5; margin-bottom: 30px;">
+                Is thinking...
+            </p>
         </div>
     </div>
 

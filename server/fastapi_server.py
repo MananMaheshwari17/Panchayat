@@ -5,7 +5,7 @@ import os
 import random
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from data.manifesto_bank import get_available_manifestos, claim_manifesto
+from data.manifesto_bank import get_available_manifestos, claim_manifesto, get_all_manifestos
 from server.init_db import restart_game_state
 
 load_dotenv()
@@ -111,6 +111,10 @@ async def play_game_turn(data: dict):
 async def get_bank():
     # This calls your helper function and returns the list as JSON
     return get_available_manifestos()
+
+@app.get("/api/all-manifestos")
+async def get_all_bank():
+    return get_all_manifestos()
 
 @app.post("/api/restart-game")
 async def restart_game():

@@ -102,6 +102,10 @@ def get_available_manifestos():
     """Returns only manifestos that haven't been claimed yet."""
     return [m for m in MANIFESTO_BANK if m["used_by"] is None]
 
+def get_all_manifestos():
+    """Returns all manifestos with their used_by status."""
+    return MANIFESTO_BANK
+
 def claim_manifesto(manifesto_id, candidate_id):
     """Marks a manifesto as used by a specific candidate."""
     for m in MANIFESTO_BANK:
