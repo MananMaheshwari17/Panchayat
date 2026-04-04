@@ -51,6 +51,7 @@
                 <span class="coin-icon">🪙</span>
                 <span class="coin-count" id="coinCount">1,250</span>
             </div>
+            <button class="coc-btn" id="cocBtn" title="Code of Conduct">⚖️ CoC</button>
             <button class="settings-btn restart-btn" id="restartGameBtn" title="Restart Game">🔄</button>
             <button class="settings-btn" id="settingsBtn">⚙️</button>
         </div>
@@ -274,6 +275,58 @@
             
             <button class="popup-action-btn" id="playAgainBtn" style="background: #f0c040; box-shadow: 0 4px 0 #c89838;">
                 <span class="popup-action-text">🏆 PLAY AGAIN</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══ CODE OF CONDUCT POPUP ═══ -->
+    <div class="popup-overlay" id="cocOverlay">
+        <div class="popup-panel coc-popup-panel" style="border: 4px solid #f0c040;">
+            <button class="popup-close-btn" id="cocCloseBtn">✕</button>
+            <div class="panel-card-header" style="margin-bottom: 14px;">
+                <span class="panel-card-title" style="color: #f0c040;">⚖️ CODE OF CONDUCT</span>
+            </div>
+            <div class="popup-scroll-area coc-rules-list" style="max-height: calc(70vh - 120px);">
+                <div class="coc-rule coc-rule-ban">
+                    <span class="coc-rule-icon">🚫</span>
+                    <span class="coc-rule-text">No caste, religion, or communal slurs.</span>
+                </div>
+                <div class="coc-rule coc-rule-ban">
+                    <span class="coc-rule-icon">🚫</span>
+                    <span class="coc-rule-text">No fake serious criminal accusations.</span>
+                </div>
+                <div class="coc-rule coc-rule-ban">
+                    <span class="coc-rule-icon">🚫</span>
+                    <span class="coc-rule-text">No threats or incitement of violence.</span>
+                </div>
+                <div class="coc-rule coc-rule-ban">
+                    <span class="coc-rule-icon">🚫</span>
+                    <span class="coc-rule-text">No sexist or gender-based attacks.</span>
+                </div>
+                <div class="coc-rule coc-rule-ban">
+                    <span class="coc-rule-icon">🚫</span>
+                    <span class="coc-rule-text">No false rumors about health or death.</span>
+                </div>
+                <div class="coc-divider"></div>
+                <div class="coc-rule coc-rule-allow">
+                    <span class="coc-rule-icon">✅</span>
+                    <span class="coc-rule-text">Real criticism of policies and performance is allowed.</span>
+                </div>
+                <div class="coc-rule coc-rule-allow">
+                    <span class="coc-rule-icon">✅</span>
+                    <span class="coc-rule-text">Satire and sarcasm are allowed.</span>
+                </div>
+                <div class="coc-rule coc-rule-allow">
+                    <span class="coc-rule-icon">✅</span>
+                    <span class="coc-rule-text">Verified sources (RTI, reports, journalism) may be used.</span>
+                </div>
+                <div class="coc-rule coc-rule-allow">
+                    <span class="coc-rule-icon">✅</span>
+                    <span class="coc-rule-text">Attacks based on real track record are allowed.</span>
+                </div>
+            </div>
+            <button class="popup-action-btn" id="cocOkBtn" style="background: #f0c040; box-shadow: 0 4px 0 #c89838;">
+                <span class="popup-action-text">👍 GOT IT</span>
             </button>
         </div>
     </div>

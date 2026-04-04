@@ -96,7 +96,11 @@ const DOM = {
     sabotageResultTitle: document.getElementById('sabotageResultTitle'),
     sabotageResultMessage: document.getElementById('sabotageResultMessage'),
     sabotageResultDialogue: document.getElementById('sabotageResultDialogue'),
-    sabotageResultCloseBtn: document.getElementById('sabotageResultCloseBtn')
+    sabotageResultCloseBtn: document.getElementById('sabotageResultCloseBtn'),
+    cocBtn: document.getElementById('cocBtn'),
+    cocOverlay: document.getElementById('cocOverlay'),
+    cocCloseBtn: document.getElementById('cocCloseBtn'),
+    cocOkBtn: document.getElementById('cocOkBtn')
 };
 
 
@@ -617,6 +621,9 @@ function bindEvents() {
         if (e.key === 'Escape' && DOM.opponentsSidebar.classList.contains('open')) {
             closeSidebar();
         }
+        if (e.key === 'Escape' && DOM.cocOverlay.classList.contains('active')) {
+            DOM.cocOverlay.classList.remove('active');
+        }
     });
     DOM.popupActionBtn.addEventListener('click', addToCampaign);
     DOM.playAgainBtn.addEventListener('click', restartGameAction);
@@ -645,6 +652,20 @@ function bindEvents() {
         DOM.restartOverlay.classList.remove('active');
     });
     DOM.confirmRestartBtn.addEventListener('click', restartGameAction);
+
+    // Code of Conduct
+    DOM.cocBtn.addEventListener('click', () => {
+        DOM.cocOverlay.classList.add('active');
+    });
+    DOM.cocCloseBtn.addEventListener('click', () => {
+        DOM.cocOverlay.classList.remove('active');
+    });
+    DOM.cocOkBtn.addEventListener('click', () => {
+        DOM.cocOverlay.classList.remove('active');
+    });
+    DOM.cocOverlay.addEventListener('click', (e) => {
+        if (e.target === DOM.cocOverlay) DOM.cocOverlay.classList.remove('active');
+    });
 }
 
 async function restartGameAction() {
