@@ -72,17 +72,23 @@ const DOM = {
 // ══════════════════════════════════
 
 async function apiFetch(endpoint, options = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
+
     try {
         const res = await fetch(`${API_BASE}${endpoint}`, {
             headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
             ...options
         });
+        clearTimeout(timeoutId);
         if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             throw new Error(errData.detail || `HTTP ${res.status}`);
         }
         return await res.json();
     } catch (err) {
+        clearTimeout(timeoutId);
         console.error(`API Error [${endpoint}]:`, err.message);
         throw err;
     }
@@ -591,38 +597,19 @@ function renderOpponentsSidebar() {
 async function addToCampaign() {
     const customText = DOM.customManifestoInput.value.trim();
     let addedCount = 0;
-
-    // Disable button during API calls
-    DOM.popupActionBtn.disabled = true;
-    DOM.popupActionBtn.style.opacity = '0.6';
+    const apiSyncTasks = []; // Background API calls
 
     try {
         // Process selected manifesto bank options
         for (const optId of gameState.selectedPopupOptions) {
             const option = gameState.manifestoBank.find(o => o.id === optId);
             if (!option) continue;
-
-            // Check if already in player's manifesto
             if (gameState.manifesto.some(m => m.id === option.id)) continue;
 
-            // Call backend: apply this manifesto's effect
-            try {
-                const result = await applyManifesto(option.target_group_id, option.shift_amount);
-                console.log(`✅ Applied manifesto ${option.id} → group ${option.target_group_id}`, result);
-                // Sync returned shares into local state
-                if (result.new_shares) {
-                    gameState.allShares[option.target_group_id] = {};
-                    for (const [cId, share] of Object.entries(result.new_shares)) {
-                        gameState.allShares[option.target_group_id][Number(cId)] = share;
-                    }
-                }
-            } catch (apiErr) {
-                console.warn(`Backend call failed for manifesto ${option.id}:`, apiErr.message);
-                // Apply waterfall locally as fallback
-                applyWaterfallLocally(option.target_group_id, option.shift_amount);
-            }
+            // 1. Apply waterfall LOCALLY first (instant)
+            applyWaterfallLocally(option.target_group_id, option.shift_amount);
 
-            // Add to local manifesto list
+            // 2. Add to local manifesto list immediately
             gameState.manifesto.push({
                 id: option.id,
                 title: option.title,
@@ -632,8 +619,23 @@ async function addToCampaign() {
                 icon: getGroupIcon(option.target_group_id)
             });
 
-            // Remove from available bank
+            // 3. Remove from available bank
             gameState.manifestoBank = gameState.manifestoBank.filter(m => m.id !== option.id);
+
+            // 4. Queue background API sync (non-blocking)
+            apiSyncTasks.push(
+                applyManifesto(option.target_group_id, option.shift_amount)
+                    .then(result => {
+                        if (result.new_shares) {
+                            gameState.allShares[option.target_group_id] = {};
+                            for (const [cId, share] of Object.entries(result.new_shares)) {
+                                gameState.allShares[option.target_group_id][Number(cId)] = share;
+                            }
+                        }
+                        console.log(`✅ Synced manifesto ${option.id} with server`);
+                    })
+                    .catch(err => console.warn(`Server sync skipped for ${option.id}:`, err.message))
+            );
 
             addedCount++;
         }
@@ -658,18 +660,21 @@ async function addToCampaign() {
                 percent: Math.round((gameState.allShares[group.id]?.[PLAYER_CANDIDATE_ID] ?? INITIAL_SHARE) * 100) / 100
             }));
 
+            // Immediate UI update — no waiting for server
             renderManifesto(true);
             renderBarChart();
             closePopup();
             showToast('⚔️', `${addedCount} manifesto${addedCount > 1 ? 's' : ''} deployed!`);
 
-            // Update coin count (spend coins for each manifesto)
+            // Update coin count
             gameState.candidate.coins -= addedCount * 50;
             DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
 
+            // Let API calls finish in background (don't block UI)
+            Promise.allSettled(apiSyncTasks);
+
         } else if (gameState.selectedPopupOptions.length === 0 && !customText) {
-            // Nothing selected — shake
-            DOM.popupActionBtn.style.animation = 'shake 0.4s steps(4)';
+            DOM.popupActionBtn.style.animation = 'shake 0.4s ease-out';
             setTimeout(() => DOM.popupActionBtn.style.animation = '', 400);
         } else {
             closePopup();
@@ -678,9 +683,6 @@ async function addToCampaign() {
     } catch (err) {
         console.error('Error in addToCampaign:', err);
         showToast('❌', 'Something went wrong!');
-    } finally {
-        DOM.popupActionBtn.disabled = false;
-        DOM.popupActionBtn.style.opacity = '';
     }
 }
 
