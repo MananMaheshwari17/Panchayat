@@ -80,7 +80,7 @@ class SoundManager {
             this.masterGain.connect(this.ctx.destination);
 
             // Set default volumes
-            this.bgmGain.gain.value = 0.015; // Extremely low, subtle ambient background
+            this.bgmGain.gain.value = 0.2; // Boosted volume for BGM
             this.uiGain.gain.value = 0.6;
             this._updateMuteState();
         }
@@ -981,6 +981,12 @@ function bindEvents() {
     DOM.popupActionBtn.addEventListener('click', addToCampaign);
     DOM.playAgainBtn.addEventListener('click', restartGameAction);
 
+    // Skip Turn Button
+    DOM.skipTurnBtn = document.getElementById('skipTurnBtn');
+    if (DOM.skipTurnBtn) {
+        DOM.skipTurnBtn.addEventListener('click', skipTurnAction);
+    }
+
     // Hamburger → toggle opponents sidebar
     DOM.menuBtn.addEventListener('click', toggleSidebar);
     DOM.sidebarCloseBtn.addEventListener('click', closeSidebar);
@@ -1430,6 +1436,45 @@ async function addToCampaign() {
     }
 }
 
+// ══════════════════════════════════
+//  SKIP TURN LOGIC
+// ══════════════════════════════════
+async function skipTurnAction() {
+    if (gameState.turnNumber > 5) return;
+    
+    soundManager.play('ui_click');
+    showToast('⏭️', 'Turn Skipped!');
+
+    DOM.turnAnnouncerOverlay.classList.add('active');
+    DOM.announcerName.textContent = "RND " + gameState.turnNumber + " - PASS";
+    DOM.announcerAction.textContent = "Processing NPC turns...";
+    
+    try {
+        const npcRes = await apiFetch('/api/end-turn', { method: 'POST', timeoutMs: 60000 });
+        if (npcRes.npc_actions && npcRes.npc_actions.length > 0) {
+            await animateNpcTurns(npcRes.npc_actions);
+        }
+    } catch (err) { console.error("NPC turn failed:", err); }
+    
+    await loadVoterStanding();
+    renderBarChart();
+    renderOpponentsSidebar();
+
+    gameState.candidate.coins += 25;
+    localStorage.setItem('playerCoins', gameState.candidate.coins);
+    if (DOM.coinCount) DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+    setTimeout(() => showToast('🪙', 'Round End! +25 Coins Granted'), 500);
+
+    gameState.turnNumber++;
+    localStorage.setItem('turnNumber', gameState.turnNumber);
+    if (gameState.turnNumber <= 5) {
+        DOM.roundTrackerText.textContent = `RND ${gameState.turnNumber}/5`;
+    } else {
+        DOM.roundTrackerText.textContent = `RND 5/5`;
+        setTimeout(() => evaluateElectionResults(), 1000);
+    }
+}
+
 /**
  * Waterfall Redistribution (matches fastapi_server.py logic exactly)
  * ─────────────────────────────────────────────────────────────────
@@ -1509,17 +1554,23 @@ function showToast(icon, msg) {
  * If muted or error, both resolve immediately.
  */
 function playCharacterSpeech(text, candidateId, speechStyle = 'neutral') {
-    // Immediate resolve for muted/empty
-    if (gameState.isMuted || !text) {
-        return {
-            onStarted: Promise.resolve(),
-            onEnded: Promise.resolve()
-        };
-    }
-
     let startResolve, endResolve;
     const onStarted = new Promise(r => { startResolve = r; });
     const onEnded = new Promise(r => { endResolve = r; });
+
+    const controller = new AbortController();
+    let isAborted = false;
+
+    // Immediate resolve for muted/empty
+    if (gameState.isMuted || !text) {
+        startResolve();
+        endResolve();
+        return { 
+            onStarted, 
+            onEnded, 
+            abort: () => { isAborted = true; } 
+        };
+    }
 
     // Fetch + play in background
     (async () => {
@@ -1531,8 +1582,11 @@ function playCharacterSpeech(text, candidateId, speechStyle = 'neutral') {
                     text: text,
                     candidate_id: candidateId,
                     speech_style: speechStyle
-                })
+                }),
+                signal: controller.signal
             });
+
+            if (isAborted) return;
 
             if (!resp.ok) {
                 console.warn('TTS request failed:', resp.status);
@@ -1542,6 +1596,8 @@ function playCharacterSpeech(text, candidateId, speechStyle = 'neutral') {
             }
 
             const blob = await resp.blob();
+            if (isAborted) return;
+
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
             gameState.currentAudio = audio;
@@ -1578,7 +1634,18 @@ function playCharacterSpeech(text, candidateId, speechStyle = 'neutral') {
         }
     })();
 
-    return { onStarted, onEnded };
+    return { 
+        onStarted, 
+        onEnded, 
+        abort: () => {
+            isAborted = true;
+            try { controller.abort(); } catch(e) {}
+            if (gameState.currentAudio) {
+                gameState.currentAudio.pause();
+                gameState.currentAudio = null;
+            }
+        }
+    };
 }
 
 /**
@@ -1640,7 +1707,8 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
         DOM.dialogueAudioIndicator.classList.add('playing');
         DOM.dialogueText.textContent = '🔊 Loading voice...';
 
-        const { onStarted, onEnded } = playCharacterSpeech(dialogueText, candidateId, speechStyle);
+        const speechControls = playCharacterSpeech(dialogueText, candidateId, speechStyle);
+        const { onStarted, onEnded, abort } = speechControls;
 
         // When audio actually starts playing → begin the typewriter
         onStarted.then(() => {
@@ -1679,6 +1747,7 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
 
             if (!typewriterStarted) {
                 // Audio hasn't started yet — skip waiting, show full text
+                abort();
                 startTypewriter();
                 if (typewriterInterval) clearInterval(typewriterInterval);
                 typewriterInterval = null;
@@ -1702,10 +1771,7 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
 
             if (!audioDone && !gameState.isMuted) {
                 // Skip audio — stop it
-                if (gameState.currentAudio) {
-                    gameState.currentAudio.pause();
-                    gameState.currentAudio = null;
-                }
+                abort();
                 audioDone = true;
                 DOM.dialogueAudioIndicator.classList.remove('playing');
                 checkShowContinue();
@@ -1714,6 +1780,7 @@ function showDialoguePopup(speakerName, dialogueText, emoji, color, candidateId,
 
             // Dismiss completely
             dismissed = true;
+            abort();
             soundManager.play('ui_click');
             DOM.dialogueOverlay.classList.remove('active');
             DOM.dialogueOverlay.removeEventListener('click', onDismiss);

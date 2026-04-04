@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import Optional
 from groq import Groq
+from concurrent.futures import ThreadPoolExecutor
 from data.manifesto_bank import get_available_manifestos, claim_manifesto, get_all_manifestos
 from server.init_db import restart_game_state
 
@@ -599,7 +600,6 @@ Example:
                     vic_name = vic_data.get("name", "Target")
                     vic_weakness = vic_data.get("weakness_desc", "")
 
-                    # Step 1: ArmorIQ checks code of conduct
                     conduct = check_code_of_conduct(sabotage_text, npc_name, vic_name)
                     allowed = conduct.get("allowed", True)
 
@@ -615,25 +615,19 @@ Example:
                         })
                         continue
 
-                    # Step 2: Groq evaluates damage
-                    damage = evaluate_sabotage_damage(sabotage_text, vic_name, vic_weakness)
-                    multiplier = damage["multiplier"]
-                    dialogue = damage["dialogue"]
-
-                    # Step 3: Apply damage
-                    apply_sabotage_damage(vic_id, multiplier)
-
-                    damage_pct = int(multiplier * 100)
-                    actions.append({
-                        "type": "sabotage",
-                        "candidate_id": npc_id,
-                        "target_id": vic_id,
-                        "sabotage_text": sabotage_text,
-                        "blocked": False,
-                        "multiplier": multiplier,
-                        "dialogue": dialogue,
-                        "message": f"SABOTAGE! {vic_name} lost {damage_pct}% voter share!"
-                    })
+                    def evaluate_and_apply():
+                        damage = evaluate_sabotage_damage(sabotage_text, vic_name, vic_weakness)
+                        return {
+                            "npc_id": npc_id,
+                            "vic_id": vic_id,
+                            "multiplier": damage["multiplier"],
+                            "dialogue": damage["dialogue"],
+                            "sabotage_text": sabotage_text,
+                            "vic_name": vic_name
+                        }
+                    
+                    # Store lambda for grouped future execution
+                    act["_sabotage_task"] = evaluate_and_apply
                 continue
 
         # Standard Manifesto
@@ -696,6 +690,25 @@ Example:
             "dialogue": claimed.get("dialogue", ""),
             "speech_style": claimed.get("speech_style", "neutral")
         })
+
+    # Execute all stored sabotage evaluation tasks concurrently
+    sabotage_tasks = [selections.get(str(npc_id), {}).get("_sabotage_task") for npc_id in range(4) if callable(selections.get(str(npc_id), {}).get("_sabotage_task"))]
+    if sabotage_tasks:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            results = list(executor.map(lambda fn: fn(), sabotage_tasks))
+            for res in results:
+                apply_sabotage_damage(res["vic_id"], res["multiplier"])
+                damage_pct = int(res["multiplier"] * 100)
+                actions.append({
+                    "type": "sabotage",
+                    "candidate_id": res["npc_id"],
+                    "target_id": res["vic_id"],
+                    "sabotage_text": res["sabotage_text"],
+                    "blocked": False,
+                    "multiplier": res["multiplier"],
+                    "dialogue": res["dialogue"],
+                    "message": f"SABOTAGE! {res['vic_name']} lost {damage_pct}% voter share!"
+                })
 
     return {"status": "success", "npc_actions": actions}
 
