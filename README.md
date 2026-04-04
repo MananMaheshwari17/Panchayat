@@ -20,7 +20,7 @@ India has **950 million** eligible voters, yet most citizens:
 
 ---
 
-## What is Panchayat AI?
+## What is Panchayat?
 
 A **turn-based political simulation** where you compete as an independent candidate against 4 AI-powered opponents in a Panchayat (village council) election. Over 5 rounds, you:
 
