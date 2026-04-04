@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panchayat - A political simulator game where you build your manifesto and win elections">
+    <meta name="description" content="Panchayat - A retro pixel-art political simulator game where you build your manifesto and win elections">
     <title>Panchayat - Political Simulator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fredoka:wght@400;500;600;700&family=Lilita+One&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -15,6 +15,9 @@
     <div class="game-bg">
         <div class="bg-layer"></div>
     </div>
+
+    <!-- Pixel Particle Canvas (fireflies/sparkles) -->
+    <canvas id="pixelParticles"></canvas>
 
     <!-- ═══ TOP BAR ═══ -->
     <header class="topbar" id="topbar">
@@ -28,7 +31,7 @@
         <div class="topbar-center">
             <div class="level-badge" id="levelBadge">
                 <div class="level-shield">
-                    <span class="level-text">LEVEL 1</span>
+                    <span class="level-text">LVL 1</span>
                 </div>
                 <div class="level-stars">
                     <span class="lstar filled">★</span>
@@ -47,6 +50,18 @@
         </div>
     </header>
 
+    <!-- ═══ OPPONENTS SIDEBAR ═══ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="opponents-sidebar" id="opponentsSidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">⚔ OPPONENTS</span>
+            <button class="sidebar-close-btn" id="sidebarCloseBtn">✕</button>
+        </div>
+        <div class="sidebar-scroll" id="sidebarScroll">
+            <!-- Opponent cards rendered by JS -->
+        </div>
+    </aside>
+
     <!-- ═══ MAIN CONTENT ═══ -->
     <main class="game-main">
 
@@ -54,7 +69,7 @@
         <section class="candidate-card" id="candidateCard">
             <div class="candidate-inner">
                 <div class="avatar-frame">
-                    <img src="assets/candidate_avatar.png?v=3" alt="Rajesh Kumar" class="avatar-img" id="candidateAvatar">
+                    <img src="assets/pixel_candidate_avatar.png" alt="Rajesh Kumar" class="avatar-img" id="candidateAvatar">
                 </div>
                 <div class="candidate-info">
                     <h1 class="candidate-name" id="candidateName">Rajesh Kumar</h1>
@@ -63,13 +78,13 @@
                         <span class="party-name" id="candidateParty">Jan Seva Party</span>
                     </div>
                     <div class="popularity-row">
-                        <span class="pop-label">Popularity:</span>
+                        <span class="pop-label">HP:</span>
                         <div class="pop-stars">
-                            <span class="pstar filled">★</span>
-                            <span class="pstar filled">★</span>
-                            <span class="pstar">★</span>
-                            <span class="pstar">★</span>
-                            <span class="pstar">★</span>
+                            <span class="pstar filled">♥</span>
+                            <span class="pstar filled">♥</span>
+                            <span class="pstar">♥</span>
+                            <span class="pstar">♥</span>
+                            <span class="pstar">♥</span>
                         </div>
                     </div>
                 </div>
@@ -82,7 +97,7 @@
             <!-- LEFT PANEL: Manifesto -->
             <section class="panel-card manifesto-panel" id="manifestoPanel">
                 <div class="panel-card-header">
-                    <span class="panel-card-title">Manifesto</span>
+                    <span class="panel-card-title">📜 MANIFESTO</span>
                 </div>
                 <div class="panel-card-body">
                     <div class="manifesto-column" id="manifestoColumn">
@@ -96,7 +111,7 @@
             <!-- RIGHT PANEL: Voter Demographics -->
             <section class="panel-card demographics-panel" id="demographicsPanel">
                 <div class="panel-card-header">
-                    <span class="panel-card-title">Voter Demographics</span>
+                    <span class="panel-card-title">📊 VOTERS</span>
                 </div>
                 <div class="panel-card-body">
                     <div class="demographics-column" id="demographicsColumn">
@@ -135,7 +150,7 @@
 
             <!-- Add to Campaign Button -->
             <button class="popup-action-btn" id="popupActionBtn">
-                <span class="popup-action-text">Add to Campaign</span>
+                <span class="popup-action-text">⚔ ADD TO CAMPAIGN</span>
             </button>
         </div>
     </div>
