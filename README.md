@@ -1,7 +1,9 @@
 
 # Panchayat
 
-### Learn Democracy by Living It - Political Simulation
+### Learn Democracy by Living It — A Retro Pixel-Art Political Simulator
+
+**Live Demo: [http://65.20.91.167/](http://65.20.91.167/)**
 
 **HackByte 4.0 | Claw & Shield Track (ArmorIQ x OpenClaw)**
 
@@ -16,22 +18,23 @@ India has **950 million** eligible voters, yet most citizens:
 - Have never experienced the strategic complexity behind policy-making
 - Are unaware of election laws like the **Model Code of Conduct**, **RPA Section 125**, or **IPC Section 171**
 
-**Panchayat AI** solves this by letting you *become* a politician. You don't read about democracy — you compete in it against 4 AI opponents who fight back, attack your record, and try to win the electorate. Every attack is validated by a real election code. Every vote you win or lose is earned through **policy, not propaganda**.
+**Panchayat** solves this by letting you *become* a politician. You don't read about democracy — you compete in it against 4 AI opponents who fight back, sabotage your campaign, and try to win the electorate. Every attack is validated by an **Election Commissioner (ArmorIQ)**. Every vote you win or lose is earned through **policy, strategy, and political combat**.
 
 ---
 
 ## What is Panchayat?
 
-A **turn-based political simulation** where you compete as an independent candidate against 4 AI-powered opponents in a Panchayat (village council) election. Over 5 rounds, you:
+A **turn-based political simulation** with a retro 16-bit pixel-art aesthetic where you compete as an independent candidate against 4 AI-powered opponents in a Panchayat (village council) election. Over 5 rounds, you:
 
-1. **Choose manifesto policies** from 50 real-world Indian policy proposals
-2. **Watch AI candidates react** in-character with voice (ElevenLabs TTS)
-3. **See attacks fly** between candidates - fact-based critiques, public challenges, scandal exposes
-4. **Enter the War Room** to launch your own strategic attacks or test illegal moves
-5. **Watch votes shift** in real-time as your decisions ripple through 5 voter demographics
+1. **Build your manifesto** by choosing from dozens of real-world Indian policy proposals
+2. **Manage your coin economy** — every action costs coins (manifesto: 50, sabotage: 75, deepfake: 150)
+3. **Launch sabotage attacks** against opponents — write your own political attack dialogue
+4. **Deploy deepfake audio attacks** — AI generates fake confessions in the target's voice (Hindi)
+5. **Defend with voice watermarking** — purchase audio authenticity shields to counter deepfakes
+6. **Watch NPC candidates** autonomously pick manifestos, launch sabotages, and fight each other
+7. **Win the election** by having the highest total voter share across 5 demographics
 
-The twist: **Every political action is validated by ArmorIQ Shield** - a cryptographic enforcement layer that blocks communal hate speech, personal attacks, fake claims, voter intimidation, and bribery. If an AI (or you) crosses the line, the Election Commission catches it.
-
+The twist: **Every sabotage is validated by the Election Commissioner (ArmorIQ + Groq)** — communal hate speech, fabricated criminal accusations, threats of violence, sexist attacks, and health misinformation are automatically blocked with a detailed reason citing Indian election law.
 
 ---
 
@@ -41,154 +44,154 @@ The twist: **Every political action is validated by ArmorIQ Shield** - a cryptog
 
 | Hackathon Requirement | Our Implementation | Code Location |
 |---|---|---|
-| **Structured Intent Model** | `PoliticalIntent` class with candidate_id, action_type, target, narrative, SHA-256 intent hash | `bridge/shield_engine.py:67-103` |
-| **Policy-based Runtime Enforcement** | 3-layer Shield: Type Check -> Content Regex -> ArmorIQ SDK verification | `bridge/shield_engine.py:216-283` |
-| **Separation of Reasoning & Execution** | Claw (reasoning) generates intent -> Shield (execution gate) validates -> Game Engine mutates state | `bridge/claw_agent.py` -> `bridge/shield_engine.py` -> `bridge/api_server.py` |
-| **At least 1 Allowed Action** | `policy_critique`, `public_challenge`, `voter_appeal` - all pass Shield | Verified in audit log |
-| **At least 1 Blocked Action** | `communal_incitement`, `personal_attack`, `bribery_promise` — deterministically blocked | War Room "OUT OF CODE" attacks |
-| **Logged & Explained Decisions** | Every Shield verdict logged to `data/shield_audit_log.json` with reason, policy ref, intent hash, timestamp | `bridge/shield_engine.py:336-368` |
-| **No hardcoded shortcuts** | Real Gemini LLM reasoning for candidate reactions; regex + SDK for enforcement; structured JSON policy model | Full stack |
+| **Structured Intent Model** | Sabotage prompts validated against structured Election Code of Conduct | `server/fastapi_server.py:76-88` |
+| **Policy-based Runtime Enforcement** | 2-layer: ArmorIQ SDK cryptographic verification, Groq LLM judge fallback | `server/fastapi_server.py:154-227` |
+| **Separation of Reasoning & Execution** | Groq (reasoning) generates NPC strategy, ArmorIQ/Groq (enforcement) validates, MongoDB (state mutation) | `server/fastapi_server.py` |
+| **At least 1 Allowed Action** | Policy critique, public challenge, exposing genuine weaknesses — all pass Election Commissioner | Verified in gameplay |
+| **At least 1 Blocked Action** | Communal incitement, personal attacks, fabricated charges, threats, sexist attacks — deterministically blocked | Election Code of Conduct rules 1-5 |
+| **Logged & Explained Decisions** | Every verdict returned with `allowed: true/false` and `reason` explaining which Code of Conduct rule was violated | API response JSON |
+| **No hardcoded shortcuts** | Real Groq LLM reasoning for NPC strategy; ArmorIQ SDK for cryptographic enforcement; structured JSON election code | Full stack |
 
 ### Architecture: Election Commission as a Service
 
 ```text
 PLAYER
-  | (Picks manifesto -> Opens War Room -> Launches attack)
+  | (Builds manifesto -> Launches sabotage -> Buys deepfakes/watermarks)
   v
-CLAW (Reasoning Layer)
-  | (AI Candidates autonomously generate political strategies)
-  | Output: Structured PoliticalIntent JSON
+GROQ (NPC Reasoning Layer)
+  | AI NPCs autonomously choose: manifesto OR sabotage
+  | Output: Structured action JSON with target, sabotage_text, deepfake flag
   v
-SHIELD (Enforcement Layer)
-  | 1. Type Check -> 2. Content Regex -> 3. ArmorIQ SDK Crypto Verify
-  | Output: ShieldVerdict (ALLOWED/BLOCKED)
+ARMORIQ + GROQ (Election Commissioner)
+  | 1. ArmorIQ SDK -> Cryptographic intent verification
+  | 2. Groq Judge fallback -> LLM evaluates against Election Code of Conduct
+  | Output: {allowed: true/false, reason: "..."}
   v
-GAME ENGINE (State Mutation)
-    (Only processes ALLOWED actions -> Updates forecast)
+GAME ENGINE (State Mutation in MongoDB)
+  | Only processes ALLOWED actions -> Updates voter shares
+  | Deepfake attacks: Groq generates Hindi confession -> ElevenLabs TTS in target voice
+  | Watermark defense: FFT-based 19kHz sine wave detection blocks deepfakes
 ```
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="client/assets/readme1.png" alt="Panchayat Gameplay - Main Interface" width="48%">
+  <img src="client/assets/readme2.png" alt="Panchayat Gameplay - Election Results" width="48%">
+</p>
 
 ---
 
 ## Features
 
-### 1. Manifesto System - 50 Real-World Indian Policies
+### 1. Retro Pixel-Art Game Interface
 
-Each round presents 10 policies from categories like agriculture, economy, technology, governance, defense, and culture. These are modeled on real Indian policy debates:
+The entire UI is built as a **16-bit retro game** using the `Press Start 2P` pixel font:
 
-- *"Increase MSP by 50% for wheat, rice, and pulses"*
-- *"Deploy free 5G connectivity for every village Panchayat"*
-- *"Implement blockchain transparency for all Panchayat fund disbursals"*
-- *"Mandate 50% women reservation in all Panchayat elections"*
+- **Start screen** with Single Player / Multiplayer (coming soon) menu
+- **Wood-textured top bar** with level badge, round tracker, and coin counter
+- **Pixel-art candidate avatars** — unique generated portraits for player and all NPCs
+- **Animated firefly particle system** on canvas for atmospheric village background
+- **Procedural chiptune BGM** and sound effects via Web Audio API synthesizer
+- **Visual novel-style dialogue popup** with speaker portraits and audio waveform indicator
+- **Responsive layout** with sidebar opponents panel and leaderboard widget
 
-Your choice shapes voter sentiment across 5 demographics with different ideological alignments.
+### 2. Manifesto System — Real-World Indian Policies
 
-### 2. AI Political Agents - 4 Distinct Ideologies
+Each round presents policies from categories like agriculture, education, technology, labor, and governance. Examples:
 
-Each AI candidate is a fully-realized political persona powered by **Google Gemini**:
+- *"Mandi Modernization Act — Blockchain-tracked cold storage"*
+- *"Abhyudaya Coaching Corps — Free JEE/NEET/UPSC coaching in every village"*
+- *"Shramik Suraksha Insurance — Guaranteed daily-wage insurance"*
+- *"Panchayat Fiber Revolution — High-speed 5G broadband"*
 
-| Candidate | Party | Archetype | Key Trait |
-|---|---|---|---|
-| **Pt. Vedprakash Shastri** | Sanskriti Seva Dal | Traditionalist | Quotes the Arthashastra; cow-based economics |
-| **Arjun Mehra** | Digital Bharat Front | Techno-Populist | IIT alumnus; campaigns on Instagram Reels |
-| **Comrade Meera Devi Yadav** | Samta Shakti Morcha | Socialist Reformer | Led the 'Roti Andolan'; fights for daily-wage workers |
-| **Nandini Krishnamurthy** | Swatantra Vikas Party | Corporate Libertarian | Former World Bank economist; 1991 reforms veteran |
+Each manifesto targets one of **5 voter groups** (Farmers, Students, Tech Workers, Laborers, Youth) and shifts vote shares using a **waterfall redistribution algorithm** — gaining votes from one group means rivals lose proportionally.
 
-Each AI reacts in-character to your policies with **ElevenLabs voice synthesis**, creating a living debate experience.
+### 3. AI Political Agents — 4 Distinct Ideologies
 
-### 3. War Room - Strategic Political Combat
+Each AI candidate is a fully-realized political persona with unique system prompts, ideology scores across 8 axes, and speaking styles:
 
-After each round, the **War Room** opens automatically. You:
+| Candidate | Title | Party | Archetype | Key Trait |
+|---|---|---|---|---|
+| **Pt. Vedprakash Shastri** | Dharma Rakshak | Sanskriti Seva Dal | Traditionalist | Quotes the Arthashastra; cow-based economics |
+| **Arjun Mehra** | Vikas Purush | Digital Bharat Front | Techno-Populist | IIT alumnus; campaigns on Instagram Reels |
+| **Comrade Meera Devi Yadav** | Jan Neta | Samta Shakti Morcha | Socialist Reformer | Led the 'Roti Andolan'; fights for daily-wage workers |
+| **Nandini Krishnamurthy** | Mukti Devi | Swatantra Vikas Party | Corporate Libertarian | Former World Bank economist; 1991 reforms veteran |
 
-- See **intelligence dossiers** on each opponent (vote share, threat level, past attacks)
-- Choose from **5 legal attacks** per candidate based on manifesto weaknesses
-- Can attempt **2 illegal attacks** per candidate (communal hate, personal attacks, bribery)
-- Watch **ArmorIQ Shield** catch and block illegal moves in real-time
-- See **vote distribution shift dynamically** based on your strategic choice
+NPCs are powered by **Groq (Llama 3.1 8B)** for turn strategy and by **Google Gemini + LangGraph** for in-character reactions with tool use.
 
-### 4. Cross-Candidate AI Attacks
+### 4. Sabotage System — Political Combat
 
-AI candidates don't just target you - they **attack each other**. Each AI targets the current election leader with contextual, manifesto-specific critiques:
+Every player and NPC can launch **sabotage attacks** against rivals:
 
-- *"Your Gau-Krishi scheme costs 500 crore with zero funding"* (vs. Dharma Rakshak)
-- *"Your smart village contracts went to party donors"* (vs. Vikas Purush)
-- *"Free everything sounds great. Who pays?"* (vs. Jan Neta)
+- **Write your own attack dialogue** — expose weaknesses, scandals, policy failures
+- **AI-evaluated damage** — Groq rates impact (10%-50% voter share loss) based on how well the attack targets actual weaknesses
+- **NPC sabotage AI** — NPCs autonomously choose targets and craft attack dialogues using Groq
+- **Coin economy** — sabotage costs 75 coins; NPCs earn 50 coins per round
 
-These are drawn from a **168-attack database** (`bridge/warroom_db.py`) covering all candidate-vs-candidate matchups.
+### 5. Deepfake Audio Attacks
 
-### 5. Shield Enforcement - India's Election Laws as Code
+A devastating special attack (150 coins):
 
-The Shield engine maps real Indian election law to AI policy enforcement:
+- **AI generates a fake admission in Hindi** (Devanagari) — as if the target candidate is confessing to a scandal
+- **Spoken in the target's cloned voice** using ElevenLabs TTS
+- **40%-75% voter share damage** — far more devastating than standard sabotage
 
-| Violation Type | Legal Reference | Example Blocked |
+### 6. Voice Watermark Defense
+
+Players can purchase **Voice Authenticity** (100 coins):
+
+- Injects an **inaudible 19kHz sine wave** watermark into all TTS audio using FFmpeg + NumPy
+- When a deepfake targets a watermarked candidate, **FFT-based spectral analysis** detects the signature
+- The deepfake attack is **blocked** and the attacker's investment is wasted
+
+### 7. Election Commissioner — Code of Conduct Enforcement
+
+Every sabotage (by player or NPC) passes through a **2-layer enforcement system**:
+
+| Violation Type | Legal Reference | Action |
 |---|---|---|
-| Communal Incitement | Section 125, RPA | *"Only Hindu values can save this Panchayat"* |
-| Personal Attack | Model Code of Conduct | *"Your entire family is corrupt"* |
-| Fabricated Claim | Section 171G, IPC | *"He is secretly plotting to sell village land"* |
-| Voter Intimidation | Section 171C, IPC | *"If you don't vote for me, schemes will stop"* |
-| Bribery Promise | Section 171B, IPC | *"Every family gets Rs 5000 for voting"* |
+| Communal/religious/caste slurs | Section 125, RPA | BLOCKED |
+| Fabricated criminal charges | IPC Section 171G | BLOCKED |
+| Threats or incitement of violence | IPC Section 171C | BLOCKED |
+| Sexist/gender-based attacks | Model Code of Conduct | BLOCKED |
+| False health/death rumours | Model Code of Conduct | BLOCKED |
+| Genuine policy criticism and satire | — | ALLOWED |
+| Public records and RTI findings | — | ALLOWED |
+| Track record attacks | — | ALLOWED |
 
-The engine uses **5 regex pattern engines** for content analysis and supports **ArmorIQ SDK** for cryptographic intent verification when configured.
+**Layer 1**: ArmorIQ SDK — cryptographic plan capture, intent tokenization, and MCP invocation for validated enforcement.
 
-### 6. Newspaper-Themed UI
-
-The entire interface is designed as a **vintage Indian newspaper** ("The Daily Panchayat"):
-
-- **Masthead** with date, round number, and edition line
-- **Manifesto popup** as a multi-page newspaper slide
-- **Speech bubbles** styled as editorial columns
-- **Action Feed** as "Campaign Dispatches" with APPROVED/BLOCKED stamps
-- **Election Forecast** as a newspaper bar chart
-- **Voter Sentiment** panel with demographic breakdown
-
-### 7. Unified Sequential Presentation
-
-No chaos, no overlap. A **unified presentation queue** ensures:
-
-1. Each candidate speaks one at a time with voice
-2. Campaign attacks shown sequentially with audio
-3. War Room opens only after all presentations complete
-4. Current audio stops when you skip to the next item
+**Layer 2 (Fallback)**: Groq LLM judge — evaluates against the full Election Code of Conduct with JSON-structured verdicts.
 
 ### 8. ElevenLabs Voice Integration
 
-Every AI response uses **ElevenLabs Multilingual v2** with candidate-specific voices:
+Every candidate speaks with **ElevenLabs Flash v2.5** TTS with style-specific voice settings:
 
-- Male authoritative voice for Pt. Vedprakash
-- Young tech-savvy voice for Arjun Mehra
-- Female activist voice for Comrade Meera
-- Professional consultant voice for Nandini
-
-Attack narrations also play with TTS, creating an immersive debate experience.
+- **Male Indian voice** for Vikas Purush, Dharma Rakshak, Jan Neta, and Player
+- **Female Indian voice** for Mukti Devi
+- **8 speech styles** — visionary, inspirational, emotional, aggressive, nationalist, etc. — each with tuned stability/similarity settings
+- Voice IDs stored in **MongoDB** per candidate for persistent configuration
 
 ### 9. Dynamic Vote Distribution
 
 Votes shift based on:
 
-- **Policy ideology alignment** - each voter group has different priorities
-- **Attack impact modifiers** - scandal exposes hurt targets more than policy critiques
-- **Per-candidate score boosts** - accumulated through the entire game
-- **AI strategic advantage** - AI candidates have a 1.15x multiplier (seasoned politicians vs newcomer)
+- **Manifesto policy targeting** — each policy targets a specific voter group with a fixed shift amount
+- **Waterfall redistribution** — when one candidate gains, opponents lose proportionally (capped at 20% per group)
+- **Sabotage damage multipliers** — losses distributed equally among all other candidates
+- **5 voter demographics x 5 candidates** = 25 independent share values tracked in MongoDB
 
-### 10. Complete Audit Trail
+### 10. Procedural Sound System
 
-Every Shield decision is logged to `data/shield_audit_log.json`:
+Full **Web Audio API** sound engine with:
 
-```json
-{
-  "verdict": "BLOCKED",
-  "intent": {
-    "candidate_id": "player",
-    "action_type": "communal_incitement",
-    "target_id": "dharma_rakshak",
-    "narrative": "Only Hindu values can save this Panchayat...",
-    "intent_hash": "be0c83e855f1e6b9"
-  },
-  "reason": "Content analysis detected 'communal_incitement': Violates Section 125 of RPA",
-  "policy_ref": "Section 125, Representation of the People Act",
-  "enforcement_method": "content_analysis",
-  "verdict_time": "2026-04-04T12:35:17.123456"
-}
-```
+- **Chiptune sound effects** — procedurally synthesized hover, click, error, success, sabotage, and round chime sounds
+- **Ambient village atmosphere** — procedural low-pass filtered white noise simulating river sounds
+- **Background music** — procedural C major 7th drone pad with triangle waves and chorus detuning
+- **Support for real audio files** — loads WAV/MP3 assets if available, falls back to synth
 
 ---
 
@@ -196,14 +199,15 @@ Every Shield decision is logged to `data/shield_audit_log.json`:
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| **Frontend** | React + TypeScript + Vite | Newspaper-themed game UI |
-| **Backend** | FastAPI + Python | SSE streaming, game engine, Shield |
-| **AI Reasoning** | Google Gemini (LangChain) | In-character candidate reactions |
-| **Voice** | ElevenLabs Multilingual v2 | TTS for candidate speeches + attacks |
-| **Security** | ArmorIQ SDK | Cryptographic intent verification |
-| **Policy Engine** | Custom Shield Engine | 3-layer enforcement (type + content + SDK) |
-| **Attack DB** | warroom_db.py | 168 manifesto-based attack templates |
-| **Data** | JSON policy models | Election code, manifestos, voter profiles, ideology engine |
+| **Frontend** | Vanilla HTML + CSS + JavaScript | 16-bit pixel-art game UI with Press Start 2P font |
+| **Backend** | FastAPI + Python | REST API, game engine, static file serving |
+| **Database** | MongoDB Atlas (PyMongo) | Persistent game state — candidates, voter shares, manifesto bank |
+| **NPC AI** | Groq (Llama 3.1 8B) | NPC strategy decisions, sabotage dialogue generation, damage evaluation |
+| **Agent AI** | Google Gemini + LangGraph + LangChain | In-character candidate reactions with tool use (ReAct agent) |
+| **Voice** | ElevenLabs Flash v2.5 | TTS for candidate speeches, multilingual (Hindi deepfakes) |
+| **Security** | ArmorIQ SDK | Cryptographic intent verification for code of conduct enforcement |
+| **Audio DSP** | FFmpeg + NumPy + SciPy | 19kHz watermark injection and FFT-based verification |
+| **Deployment** | Docker + Vultr Cloud | Production container on Ubuntu with systemd auto-restart |
 
 ---
 
@@ -211,54 +215,62 @@ Every Shield decision is logged to `data/shield_audit_log.json`:
 
 ```text
 Panchayat/
-|- bridge/                          # Backend engine
-|  |- api_server.py                # FastAPI server with SSE streaming
-|  |- shield_engine.py             # ArmorIQ Shield - 3-layer enforcement
-|  |- claw_agent.py                # Claw - autonomous AI strategist
-|  |- warroom_db.py                # 168 manifesto-based attack templates
-|  |- langgraph_engine.py          # LangGraph state machine + Gemini
-|  |- audio_engine.py              # ElevenLabs TTS integration
-|  |- ai_prompts.py                # Candidate persona prompts
-|- client/                          # Frontend
-|  |- src/
-|  |  |- App.tsx                  # Unified presentation queue + game flow
-|  |  |- components/
-|  |  |  |- GameScene.tsx        # Main arena with attack animations
-|  |  |  |- AttackPopup.tsx      # War Room with intel + illegal attacks
-|  |  |  |- ActionFeed.tsx       # Campaign Dispatches (newspaper style)
-|  |  |  |- ManifestoPopup.tsx   # Policy selection (slide newspaper)
-|  |  |  |- ElectionForecast.tsx # Live vote share bars
-|  |  |  |- VoterSentimentPanel  # Demographic breakdown
-|  |  |- api/bridge.ts            # SSE client + REST API
-|  |  |- data/gameData.ts         # 50 policies, 4 candidates, 5 voter groups
-|  |  |- index.css                # Complete newspaper design system
-|  |- public/assets/               # Character sprites, parliament BG
-|- data/                            # Game data + policy models
-|  |- election_code.json           # Model Code of Conduct (structured intent)
-|  |- manifestos.json              # 40+ manifesto policies per candidate
-|  |- voter_profiles.py            # 5 demographics with ideology vectors
-|  |- ideology_engine.py           # Multi-axis ideology distance calculation
-|  |- shield_audit_log.json        # Full enforcement audit trail
-|  |- candidates.json              # Candidate backstories + archetypes
-|- .env                             # API keys (Gemini, ElevenLabs, ArmorIQ)
+|-- client/                              # Frontend (served as static files)
+|   |-- index.html                      # Main game HTML — start screen, topbar, panels, popups
+|   |-- game.js                         # Game engine — API calls, rendering, sound, dialogue system
+|   |-- styles.css                      # Complete pixel-art design system (46KB)
+|   +-- assets/                         # Pixel-art avatars, backgrounds, textures, audio
+|       |-- pixel_candidate_avatar.png  # Player avatar
+|       |-- vikas_purush_avatar.png     # NPC avatar
+|       |-- dharma_rakshak_avatar.png   # NPC avatar
+|       |-- jan_neta_avatar.png         # NPC avatar
+|       |-- mukti_devi_avatar.png       # NPC avatar
+|       |-- pixel_village_bg.png        # Game background
+|       |-- wood_texture.png            # UI texture
+|       +-- audio/                      # Sound effects and BGM
+|-- server/                              # Backend
+|   |-- fastapi_server.py               # FastAPI app — all API endpoints, ArmorIQ, Groq, TTS, watermarks
+|   |-- langgraph_engine.py             # LangGraph + Gemini ReAct agent for candidate reactions
+|   |-- init_db.py                      # MongoDB initialization — candidates, voter groups, shares
+|   +-- .env                            # Server environment variables
+|-- bridge/                              # AI module
+|   |-- ai_prompts.py                   # Candidate persona system prompts and reaction builders
+|   |-- tools_langchain.py              # LangChain tools for Gemini agent (FastAPI bridge)
+|   |-- prototype.py                    # Early prototype code
+|   +-- solana_notary.py                # Blockchain notary (experimental)
+|-- data/                                # Game data and engines
+|   |-- candidates.json                 # 4 NPC personas — backstories, ideology scores, system prompts
+|   |-- manifesto_bank.py               # Policy bank — manifesto definitions with voter group targeting
+|   |-- voter_profiles.py               # 5 voter demographics with ideology vectors
+|   |-- ideology_engine.py              # Multi-axis ideology distance and election simulation
+|   |-- weaknesses.json                 # Candidate vulnerability database for sabotage targeting
+|   |-- scenarios.json                  # Campaign event scenarios
+|   |-- dialogues.json                  # Pre-built dialogue templates
+|   |-- tools.py                        # Data utility functions
+|   +-- validate_data.py               # Data integrity validation
+|-- Dockerfile                           # Production Docker image (Python 3.11-slim)
+|-- DEPLOY.md                            # Vultr deployment guide (Docker + bare-metal)
+|-- requirements.txt                     # Python dependencies (~77 packages)
+|-- .env.example                         # Template for environment variables
++-- .gitignore
 ```
 
 ---
 
 ## Learning Outcomes for the Player
 
-By playing Panchayat AI, a citizen learns:
+By playing Panchayat, a citizen learns:
 
-| Lesson | How It's Taught |
+| Lesson | How It Is Taught |
 |---|---|
-| **Policy trade-offs** | Choosing "Cancel farmer loans" gains farmer votes but loses business support |
-| **Election law** | Attempting communal incitement shows RPA Section 125 block in real-time |
-| **Strategic thinking** | Deciding whether to attack the leader or build alliances |
-| **Media literacy** | Seeing how attacks are framed as "Campaign Dispatches" |
-| **Democratic accountability** | Every action has an audit trail; Shield logs show enforcement |
-| **Ideology spectrum** | Understanding why farmers prefer welfare policies while youth want tech |
-| **Coalition politics** | AI candidates attack each other; the player navigates between factions |
-| **Code of Conduct** | The Model Code of Conduct is not abstract - it's enforced in their game |
+| **Policy trade-offs** | Choosing a farmer policy gains farmer votes but opponents lose proportionally |
+| **Election law** | Attempting communal incitement shows the exact Code of Conduct rule that blocked it |
+| **Strategic thinking** | Deciding whether to sabotage the leader, build manifesto, or save coins for a deepfake |
+| **Media literacy** | Seeing how AI-generated deepfake audio can fabricate confessions in someone's voice |
+| **Democratic accountability** | Every sabotage is reviewed by the Election Commissioner with clear reasoning |
+| **Ideology spectrum** | Understanding why farmers prefer welfare while tech workers want innovation |
+| **Resource management** | Balancing a coin economy between manifesto building, sabotage, and defense |
+| **AI ethics** | Learning that voice watermarks and forensic detection can counter deepfake misinformation |
 
 ---
 
@@ -266,16 +278,17 @@ By playing Panchayat AI, a citizen learns:
 
 ### Prerequisites
 
-- **Python 3.10+** with pip
-- **Node.js 18+** with npm
-- **Google Gemini API key** ([aistudio.google.com](https://aistudio.google.com))
-- **ElevenLabs API key** ([elevenlabs.io](https://elevenlabs.io)) - for voice synthesis
-- **ArmorIQ API key** ([platform.armoriq.ai](https://platform.armoriq.ai)) - for cryptographic Shield
+- **Python 3.11+** with pip
+- **MongoDB Atlas** cluster (free tier works) — [cloud.mongodb.com](https://cloud.mongodb.com)
+- **Groq API key** ([console.groq.com](https://console.groq.com)) — for NPC AI and damage evaluation
+- **ElevenLabs API key** ([elevenlabs.io](https://elevenlabs.io)) — for voice synthesis
+- **Google Gemini API key** ([aistudio.google.com](https://aistudio.google.com)) — for LangGraph agent
+- **ArmorIQ API key** ([platform.armoriq.ai](https://platform.armoriq.ai)) — for cryptographic enforcement (optional, Groq fallback available)
 
-### 1. Clone & Install Backend
+### 1. Clone and Install
 
 ```bash
-git clone https://github.com/your-repo/Panchayat.git
+git clone https://github.com/AnshuKashyap01/Panchayat.git
 cd Panchayat
 
 # Create virtual environment
@@ -285,83 +298,77 @@ source .venv/bin/activate    # Linux/Mac
 
 # Install dependencies
 pip install -r requirements.txt
-pip install armoriq-sdk      # For Shield cryptographic verification
 ```
 
 ### 2. Configure Environment
 
 ```bash
-cp .env.example .env
+cp .env.example server/.env
 ```
 
-Edit `.env` with your keys:
+Edit `server/.env` with your keys:
 
 ```env
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true&w=majority
 GOOGLE_API_KEY=your_gemini_api_key
-GEMINI_PRO_MODEL=gemini-2.5-flash-lite
-GEMINI_FLASH_MODEL=gemini-2.5-flash-lite
-ELEVENLABS_API_KEY=sk_your_elevenlabs_key
-ARMORIQ_API_KEY=ak_live_your_armoriq_key
+GROQ_API_KEY=your_groq_api_key
+ELEVENLABS_API_KEY=your_elevenlabs_api_key
+ARMORIQ_API_KEY=your_armoriq_api_key
 ```
 
-### 3. Install Frontend
+### 3. Initialize the Database
 
 ```bash
-cd client
-npm install
-cd ..
+python -c "from server.init_db import restart_game_state; restart_game_state()"
 ```
 
-### 4. Start the Backend
-
-```bash
-source .venv/bin/activate
-uvicorn bridge.api_server:app --port 8000 --host 0.0.0.0
-```
-
-You should see:
-
+Expected output:
 ```text
-[Shield] ArmorIQ SDK loaded — cryptographic enforcement ACTIVE
+Database Reset: Data initialized with Roles and Archetypes.
+```
+
+### 4. Start the Server
+
+```bash
+uvicorn server.fastapi_server:app --port 8000 --host 0.0.0.0
+```
+
+Expected output:
+```text
 INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
-### 5. Start the Frontend
+### 5. Play
 
-```bash
-cd client
-npm run dev
-```
+Open **http://localhost:8000/** in your browser.
 
-Open **http://localhost:5173/** in your browser.
-
-### 6. Play!
-
-1. Click **"Manifesto"** to pick your first policy
-2. Watch each AI candidate react (one at a time with voice)
-3. Watch AI cross-attacks play out sequentially
-4. **War Room** opens automatically — choose your attack
-5. Watch votes shift. Repeat for 5 rounds.
-6. See who wins the election!
+1. Click **SINGLE PLAYER** on the start screen
+2. Enter your **candidate name** and **party name**
+3. Optionally enter a **dark secret** (NPCs will use it against you)
+4. Click **ADD MANIFESTO** to pick your first policy
+5. Click **SKIP TURN** to end your round and watch NPCs react
+6. Click **SABOTAGE** to launch a political attack
+7. Repeat for 5 rounds — see who wins the Panchayat election
 
 ---
 
-## Verifying Shield Enforcement
+## Deployment
 
-After playing, inspect the audit log:
+The game is deployed at **[http://65.20.91.167/](http://65.20.91.167/)** on Vultr Cloud.
+
+### Docker Deploy (Production)
 
 ```bash
-cat data/shield_audit_log.json | python -m json.tool | head -50
+docker build -t panchayat .
+docker run -d \
+  --name panchayat \
+  --restart unless-stopped \
+  -p 80:8000 \
+  --env-file .env \
+  panchayat
 ```
 
-You'll see explicit ALLOWED/BLOCKED verdicts with policy references:
-
-```yaml
-verdict: BLOCKED
-reason: "Action type 'communal_incitement' is categorically prohibited.
-         Violates Section 125 of RPA: promoting enmity between classes"
-enforcement_method: "structured_intent_model"
-```
+See [DEPLOY.md](DEPLOY.md) for the complete Vultr deployment guide including bare-metal, systemd, and SSL setup.
 
 ---
 
@@ -369,12 +376,21 @@ enforcement_method: "structured_intent_model"
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/state` | GET | Current game state |
-| `/api/round/stream` | POST | SSE stream for a full round (reactions + attacks) |
-| `/api/attack` | POST | Player launches a political attack (Shield validated) |
-| `/api/warroom/{target_id}` | GET | Get available attacks for a target |
-| `/api/shield/audit` | GET | Full Shield enforcement audit trail |
-| `/api/reset` | POST | Reset game to initial state |
+| `/` | GET | Serve the game (static HTML) |
+| `/api/manifesto-bank` | GET | Available (unclaimed) manifestos |
+| `/api/all-manifestos` | GET | All manifestos with claim status |
+| `/api/apply-manifesto` | POST | Player claims a manifesto and shifts voter shares |
+| `/api/total-standing` | GET | Aggregated voter shares per candidate |
+| `/api/all-shares` | GET | Detailed voter shares (per group, per candidate) |
+| `/api/candidates-info` | GET | Public candidate data (name, coins, shield status) |
+| `/api/end-turn` | POST | Process NPC actions — AI picks manifesto or sabotage |
+| `/api/player-sabotage` | POST | Player launches sabotage (validated by Election Commissioner) |
+| `/api/tts` | POST | Proxy to ElevenLabs TTS with candidate voice mapping |
+| `/api/voice-map` | GET | Voice ID mapping for all candidates |
+| `/api/buy-watermark` | POST | Purchase voice authenticity shield (100 coins) |
+| `/api/set-player-weakness` | POST | Set player's dark secret for NPC targeting |
+| `/api/restart-game` | POST | Reset all game state to initial values |
+| `/api/play-turn` | POST | Run a full game turn (legacy) |
 
 ---
 
@@ -384,4 +400,4 @@ Built at **HackByte 4.0** for the **Claw & Shield Track** (ArmorIQ x OpenClaw).
 
 ---
 
-*"Democracy is not just a right - it's a skill. Panchayat AI lets you practice it."*
+*"Democracy is not just a right — it is a skill. Panchayat lets you practice it."*
