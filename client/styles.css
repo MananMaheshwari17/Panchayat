@@ -995,7 +995,7 @@ body {
 .popup-overlay {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 200; /* Increased to ensure results are on top of general UI */
     background: rgba(0, 0, 0, 0.65);
     display: flex;
     align-items: center;
@@ -1350,6 +1350,17 @@ body {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+/* Pulsing "Click to Continue" hint */
+@keyframes pulseHint {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+.pulsing-hint {
+    animation: pulseHint 1.2s infinite ease-in-out;
+    display: inline-block;
 }
 
 .manifesto-item.new-item {
@@ -1733,7 +1744,7 @@ body {
 .dialogue-overlay {
     position: fixed;
     inset: 0;
-    z-index: 150;
+    z-index: 300; /* Highest priority to ensure dialogue is never obscured */
     background: rgba(0, 0, 0, 0.55);
     display: flex;
     align-items: flex-end;

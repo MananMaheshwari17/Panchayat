@@ -1387,7 +1387,7 @@ async function animateNpcTurns(npcActions) {
             }
             
             // Wait for user to click overlay to continue
-            DOM.announcerAction.innerHTML += `<br><br><span style="color:#fff; font-size:10px; animation: blink 1s infinite; cursor:pointer;"> >>> CLICK TO CONTINUE <<< </span>`;
+            DOM.announcerAction.innerHTML += `<br><br><span class="pulsing-hint" style="color:#fff; font-size:10px; cursor:pointer;"> >>> CLICK TO CONTINUE <<< </span>`;
             
             await new Promise(resolve => {
                 const proceed = () => {
@@ -1756,6 +1756,8 @@ function playCharacterSpeech(text, candidateId, speechStyle = 'neutral') {
 
             // Safety: if 'playing' event never fires, unblock after 2s
             setTimeout(() => { startResolve(); }, 2000);
+            // Safety: if 'ended' event never fires, unblock after 10s
+            setTimeout(() => { endResolve(); }, 10000);
         } catch (err) {
             console.warn('TTS error:', err.message);
             startResolve();
@@ -2090,7 +2092,7 @@ async function executeSabotage() {
             
             // If it's a deepfake, show the Scanning animation first
             if (result.is_deepfake) {
-                await performAuthCheck(result.target_name, true);
+                await performAuthCheck(result.target_name, true, true);
                 
                 if (result.dialogue && (result.target_id !== undefined)) {
                     const profile = getCharacterProfile(result.target_id);
@@ -2195,23 +2197,43 @@ async function buyWatermarkAction() {
     }
 }
 
-async function performAuthCheck(candidateName, isSuccess) {
+async function performAuthCheck(candidateName, isSuccess, autoClose = false) {
     DOM.turnAnnouncerOverlay.classList.add('active');
     DOM.announcerName.textContent = "🔍 AUTHENTICITY CHECK";
     DOM.announcerAction.style.color = "#4088e0";
     DOM.announcerAction.innerHTML = `Analyzing ${candidateName}'s speech waves...<br><span style="font-size:10px; color:#555;">[Scanning for 19kHz signature]</span>`;
     
-    await sleep(1500);
+    // Create a skippable sleep
+    const skippableSleep = (ms) => {
+        return new Promise(resolve => {
+            const skip = () => {
+                clearTimeout(timeout);
+                DOM.turnAnnouncerOverlay.removeEventListener('click', skip);
+                resolve();
+            };
+            const timeout = setTimeout(() => {
+                DOM.turnAnnouncerOverlay.removeEventListener('click', skip);
+                resolve();
+            }, ms);
+            DOM.turnAnnouncerOverlay.addEventListener('click', skip);
+        });
+    };
+
+    await skippableSleep(1500);
     
     if (isSuccess) {
         soundManager.play('round_chime');
-        DOM.announcerAction.innerHTML = `<span style="color:#48b848; font-size:16px;">✅ AUTHENTIC</span><br>Audio contains official watermark.`;
+        DOM.announcerAction.innerHTML = `<span style="color:#48b848; font-size:16px;">✅ AUTHENTIC</span><br>Audio contains official watermark.<br><br><span class="pulsing-hint" style="font-size:9px; color:#ccc;">[Click to continue]</span>`;
     } else {
         soundManager.play('error_buzz');
-        DOM.announcerAction.innerHTML = `<span style="color:#e04848; font-size:16px;">❌ DEEPFAKE DETECTED!</span><br>No digital signature found.`;
+        DOM.announcerAction.innerHTML = `<span style="color:#e04848; font-size:16px;">❌ DEEPFAKE DETECTED!</span><br>No digital signature found.<br><br><span class="pulsing-hint" style="font-size:9px; color:#ccc;">[Click to continue]</span>`;
     }
     
-    await sleep(2000);
+    await skippableSleep(2000);
+
+    if (autoClose) {
+        DOM.turnAnnouncerOverlay.classList.remove('active');
+    }
 }
 
 
