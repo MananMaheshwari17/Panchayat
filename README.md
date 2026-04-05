@@ -78,8 +78,8 @@ GAME ENGINE (State Mutation in MongoDB)
 ## Screenshots
 
 <p align="center">
-  <img src="client/assets/readme1.png" alt="Panchayat Gameplay - Main Interface" width="48%">
-  <img src="client/assets/readme2.png" alt="Panchayat Gameplay - Election Results" width="48%">
+  <img src="client/assets/new1.png" alt="Panchayat Gameplay - Main Interface" width="48%">
+  <img src="client/assets/new2.png" alt="Panchayat Gameplay - Election Results" width="48%">
 </p>
 
 ---
