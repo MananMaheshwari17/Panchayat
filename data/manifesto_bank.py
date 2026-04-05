@@ -338,18 +338,23 @@ MANIFESTO_BANK = [
     }
 ]
 
-def get_available_manifestos():
-    """Returns only manifestos that haven't been claimed yet."""
-    return [m for m in MANIFESTO_BANK if m["used_by"] is None]
+def get_available_manifestos(db, session_id):
+    """Returns only manifestos that haven't been claimed yet for this session."""
+    return list(db.manifestos.find({"session_id": session_id, "used_by": None}, {"_id": 0}))
 
-def get_all_manifestos():
-    """Returns all manifestos with their used_by status."""
-    return MANIFESTO_BANK
+def get_all_manifestos(db, session_id):
+    """Returns all manifestos for this session with their used_by status."""
+    return list(db.manifestos.find({"session_id": session_id}, {"_id": 0}))
 
-def claim_manifesto(manifesto_id, candidate_id):
-    """Marks a manifesto as used by a specific candidate."""
-    for m in MANIFESTO_BANK:
-        if m["id"] == manifesto_id and m["used_by"] is None:
-            m["used_by"] = candidate_id
-            return m
+def claim_manifesto(db, manifesto_id, candidate_id, session_id):
+    """Marks a manifesto as used by a specific candidate for this session."""
+    m = db.manifestos.find_one_and_update(
+        {"session_id": session_id, "id": manifesto_id, "used_by": None},
+        {"$set": {"used_by": candidate_id}},
+        return_document=True
+    )
+    if m:
+        m_copy = dict(m)
+        m_copy.pop('_id', None)
+        return m_copy
     return None

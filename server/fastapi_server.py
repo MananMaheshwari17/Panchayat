@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.responses import Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -99,6 +99,41 @@ mongo_client = MongoClient(os.getenv("MONGO_URI"))
 db = mongo_client.panchayat_db
 
 # ══════════════════════════════════
+#  SESSION MANAGEMENT
+# ══════════════════════════════════
+
+def get_session_id(x_session_id: str = Header(None)):
+    if not x_session_id:
+        # For development ease, allow a default if not provided, 
+        # but in production, frontend must send it.
+        return "default_session"
+    return x_session_id
+
+def ensure_session_data(session_id: str):
+    """
+    Checks if session exists and is not expired (5 min inactivity).
+    Re-initializes if necessary.
+    """
+    now = time.time()
+    session = db.sessions.find_one({"session_id": session_id})
+    
+    if not session:
+        print(f"🆕 New session detected: {session_id}. Initializing...")
+        restart_game_state(session_id)
+    else:
+        last_activity = session.get("last_activity", 0)
+        # 5 minutes = 300 seconds
+        if now - last_activity > 300:
+            print(f"⏰ Session {session_id} expired ({int(now - last_activity)}s). Resetting...")
+            restart_game_state(session_id)
+        else:
+            # Update last activity
+            db.sessions.update_one(
+                {"session_id": session_id},
+                {"$set": {"last_activity": now}}
+            )
+
+# ══════════════════════════════════
 #  ELEVENLABS VOICE CONFIG
 # ══════════════════════════════════
 
@@ -115,9 +150,9 @@ CHARACTER_VOICES = {
     4: "76erronSBRzQKnz10Li9",  # Player        → Male
 }
 
-def get_voice_id(candidate_id: int) -> str:
+def get_voice_id(candidate_id: int, session_id: str) -> str:
     """Get voice_id from MongoDB first, fallback to hardcoded map."""
-    cand = db.candidates.find_one({"id": candidate_id}, {"voice_id": 1})
+    cand = db.candidates.find_one({"session_id": session_id, "id": candidate_id}, {"voice_id": 1})
     if cand and cand.get("voice_id"):
         return cand["voice_id"]
     return CHARACTER_VOICES.get(candidate_id, "76erronSBRzQKnz10Li9")
@@ -243,7 +278,8 @@ def evaluate_sabotage_damage(sabotage_text, target_name, target_weakness, is_dee
                     "The fake admission must be about: " + sabotage_text + "\n"
                     "The text must be in HINDI language (using Devanagari script).\n"
                     "The text must be in FIRST PERSON (I am/I have) as if " + target_name + " is admitting to a scandal.\n"
-                    "The admission must be highly damaging and dramatic (1-2 sentences).\n\n"
+                    "The admission must be highly damaging and dramatic (1-2 sentences).\n"
+                    "Example: 'मैंने गाँव के विकास फंड से अपने लिए एक लक्ज़री कार खरीदी है।'\n\n"
                     'Respond STRICTLY in JSON: {"multiplier": 0.4 to 0.75, "dialogue": "शॉकिंग हिंदी बयान"}'
                 )
             else:
@@ -279,13 +315,13 @@ def evaluate_sabotage_damage(sabotage_text, target_name, target_weakness, is_dee
     return {"multiplier": 0.1, "dialogue": "A minor scandal has been reported."}
 
 
-def apply_sabotage_damage(vic_id, multiplier):
+def apply_sabotage_damage(vic_id, multiplier, session_id: str):
     """
     Reduces target's share in every group by multiplier (e.g. 0.3 = lose 30%).
     Distributes the lost shares equally among all other candidates.
     """
-    candidates_cursor = list(db.candidates.find({}, {"_id": 0}))
-    vic_shares = list(db.voter_shares.find({"candidate_id": vic_id}))
+    candidates_cursor = list(db.candidates.find({"session_id": session_id}, {"_id": 0}))
+    vic_shares = list(db.voter_shares.find({"session_id": session_id, "candidate_id": vic_id}))
     opp_ids = [c["id"] for c in candidates_cursor if c["id"] != vic_id]
     if not opp_ids:
         return
@@ -299,14 +335,14 @@ def apply_sabotage_damage(vic_id, multiplier):
         deduction = old_share * multiplier
         new_share = old_share - deduction
         db.voter_shares.update_one(
-            {"candidate_id": vic_id, "group_id": group_id},
+            {"session_id": session_id, "candidate_id": vic_id, "group_id": group_id},
             {"$set": {"share": round(new_share, 4)}}
         )
 
         split = deduction / len(opp_ids)
         for opp_id in opp_ids:
             db.voter_shares.update_one(
-                {"candidate_id": opp_id, "group_id": group_id},
+                {"session_id": session_id, "candidate_id": opp_id, "group_id": group_id},
                 {"$inc": {"share": round(split, 4)}}
             )
 
@@ -316,10 +352,11 @@ def apply_sabotage_damage(vic_id, multiplier):
 # ══════════════════════════════════
 
 @app.post("/api/apply-manifesto")
-async def apply_manifesto(req: ManifestoRequest):
-    shares_cursor = list(db.voter_shares.find({"group_id": req.group_id}))
+async def apply_manifesto(req: ManifestoRequest, session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
+    shares_cursor = list(db.voter_shares.find({"session_id": session_id, "group_id": req.group_id}))
     if not shares_cursor:
-        raise HTTPException(status_code=404, detail=f"Group ID {req.group_id} not found in DB.")
+        raise HTTPException(status_code=404, detail=f"Group ID {req.group_id} not found in DB for this session.")
 
     shares_dict = {s["candidate_id"]: s["share"] for s in shares_cursor}
     target_id = req.candidate_id
@@ -346,7 +383,7 @@ async def apply_manifesto(req: ManifestoRequest):
 
     for c_id, final_share in shares_dict.items():
         db.voter_shares.update_one(
-            {"group_id": req.group_id, "candidate_id": c_id},
+            {"session_id": session_id, "group_id": req.group_id, "candidate_id": c_id},
             {"$set": {"share": round(final_share, 4)}}
         )
 
@@ -354,8 +391,10 @@ async def apply_manifesto(req: ManifestoRequest):
 
 
 @app.get("/api/total-standing")
-async def get_standing():
+async def get_standing(session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
     pipeline = [
+        {"$match": {"session_id": session_id}},
         {"$group": {"_id": "$candidate_id", "total_support": {"$sum": "$share"}}}
     ]
     results = list(db.voter_shares.aggregate(pipeline))
@@ -363,43 +402,49 @@ async def get_standing():
 
 
 @app.get("/api/all-shares")
-async def get_all_shares():
-    shares = list(db.voter_shares.find({}, {"_id": 0}))
+async def get_all_shares(session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
+    shares = list(db.voter_shares.find({"session_id": session_id}, {"_id": 0}))
     return shares
 
 
 @app.post("/api/play-turn")
-async def play_game_turn(data: dict):
+async def play_game_turn(data: dict, session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
     player_action = data.get("action", "Generic Campaigning")
     return {"status": "ok"}
 
 
 @app.get("/api/manifesto-bank")
-async def get_bank():
-    return get_available_manifestos()
+async def get_bank(session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
+    return get_available_manifestos(db, session_id)
 
 
 @app.get("/api/all-manifestos")
-async def get_all_bank():
-    return get_all_manifestos()
+async def get_all_bank(session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
+    return get_all_manifestos(db, session_id)
 
 
 @app.post("/api/restart-game")
-async def restart_game():
-    restart_game_state()
-    return {"status": "success", "message": "Game reset to starting state."}
+async def restart_game(session_id: str = Depends(get_session_id)):
+    restart_game_state(session_id)
+    return {"status": "success", "message": "Game reset to starting state for this session."}
 
 
 @app.post("/api/set-player-weakness")
-async def set_player_weakness(payload: PlayerWeaknessPayload):
-    db.candidates.update_one({"id": 4}, {"$set": {"weakness_desc": payload.weakness_desc}})
+async def set_player_weakness(payload: PlayerWeaknessPayload, session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
+    db.candidates.update_one({"session_id": session_id, "id": 4}, {"$set": {"weakness_desc": payload.weakness_desc}})
     return {"status": "success"}
 
 
 @app.get("/api/candidates-info")
-async def get_candidates_info():
+async def get_candidates_info(session_id: str = Depends(get_session_id)):
     """Returns public candidate data including shield status for UI."""
-    candidates = list(db.candidates.find({}, {"_id": 0, "weakness_desc": 0}))
+    ensure_session_data(session_id)
+    candidates = list(db.candidates.find({"session_id": session_id}, {"_id": 0, "weakness_desc": 0}))
     return candidates
 
 
@@ -503,16 +548,17 @@ def has_valid_watermark(audio_bytes: bytes) -> bool:
         return False
 
 @app.post("/api/buy-watermark")
-async def buy_watermark(req: BuyWatermarkRequest):
-    cand = db.candidates.find_one({"id": req.candidate_id})
+async def buy_watermark(req: BuyWatermarkRequest, session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
+    cand = db.candidates.find_one({"session_id": session_id, "id": req.candidate_id})
     if not cand:
-        raise HTTPException(status_code=404, detail="Candidate not found")
+        raise HTTPException(status_code=404, detail="Candidate not found in this session")
     
     if cand.get("coins", 0) < 100:
         raise HTTPException(status_code=400, detail="Insufficient coins")
     
     db.candidates.update_one(
-        {"id": req.candidate_id},
+        {"session_id": session_id, "id": req.candidate_id},
         {"$inc": {"coins": -100}, "$set": {"has_watermark": True}}
     )
     return {"status": "success", "message": "Voice watermark purchased!"}
@@ -522,15 +568,15 @@ async def buy_watermark(req: BuyWatermarkRequest):
 # ══════════════════════════════════
 
 @app.post("/api/tts")
-async def text_to_speech(req: TTSRequest):
+async def text_to_speech(req: TTSRequest, session_id: str = Depends(get_session_id)):
     """
-    Proxy TTS request to ElevenLabs API.
-    Returns audio/mpeg stream for playback on client.
+    Proxy TTS request to ElevenLabs API with session check.
     """
+    ensure_session_data(session_id)
     if not ELEVENLABS_API_KEY:
         raise HTTPException(status_code=500, detail="ElevenLabs API key not configured")
 
-    voice_id = get_voice_id(req.candidate_id)
+    voice_id = get_voice_id(req.candidate_id, session_id)
 
     # Map speech_style to voice_settings adjustments
     style_settings = {
@@ -584,9 +630,10 @@ async def text_to_speech(req: TTSRequest):
 
 
 @app.get("/api/voice-map")
-async def get_voice_map():
+async def get_voice_map(session_id: str = Depends(get_session_id)):
     """Return the voice_id mapping for all candidates (for client-side caching)."""
-    candidates = list(db.candidates.find({}, {"_id": 0, "id": 1, "voice_id": 1, "name": 1}))
+    ensure_session_data(session_id)
+    candidates = list(db.candidates.find({"session_id": session_id}, {"_id": 0, "id": 1, "voice_id": 1, "name": 1}))
     return {str(c["id"]): {"voice_id": c.get("voice_id", CHARACTER_VOICES.get(c["id"], "")), "name": c["name"]} for c in candidates}
 
 
@@ -595,26 +642,23 @@ async def get_voice_map():
 # ══════════════════════════════════
 
 @app.post("/api/player-sabotage")
-async def player_sabotage(req: PlayerSabotageRequest):
+async def player_sabotage(req: PlayerSabotageRequest, session_id: str = Depends(get_session_id)):
     """
     Player writes a sabotage prompt, picks a target.
-    1. ArmorIQ checks code of conduct
-    2. If blocked → return blocked + reason
-    3. If passed → Groq evaluates damage (0.1–0.5 multiplier)
-    4. Apply damage, return result
     """
-    player = db.candidates.find_one({"id": 4})
-    target = db.candidates.find_one({"id": req.target_id})
+    ensure_session_data(session_id)
+    player = db.candidates.find_one({"session_id": session_id, "id": 4})
+    target = db.candidates.find_one({"session_id": session_id, "id": req.target_id})
 
     if not player or not target:
         raise HTTPException(status_code=404, detail="Candidate not found")
 
-    cost = 75
+    cost = 150 if req.is_deepfake else 75
     if player.get("coins", 0) < cost:
         raise HTTPException(status_code=400, detail="Not enough coins for sabotage")
 
     # Deduct coins
-    db.candidates.update_one({"id": 4}, {"$inc": {"coins": -cost}})
+    db.candidates.update_one({"session_id": session_id, "id": 4}, {"$inc": {"coins": -cost}})
 
     player_name = player.get("name", "Player")
     target_name = target.get("name", "Unknown")
@@ -640,7 +684,7 @@ async def player_sabotage(req: PlayerSabotageRequest):
     dialogue = damage["dialogue"]
 
     # Step 3: Apply damage
-    apply_sabotage_damage(req.target_id, multiplier)
+    apply_sabotage_damage(req.target_id, multiplier, session_id)
 
     return {
         "status": "success",
@@ -660,46 +704,49 @@ async def player_sabotage(req: PlayerSabotageRequest):
 # ══════════════════════════════════
 
 @app.post("/api/end-turn")
-async def end_turn():
+async def end_turn(session_id: str = Depends(get_session_id)):
+    ensure_session_data(session_id)
     # Grant each candidate +50 coins per round
-    db.candidates.update_many({}, {"$inc": {"coins": 50}})
+    db.candidates.update_many({"session_id": session_id}, {"$inc": {"coins": 50}})
     
     actions = []
-    available = get_available_manifestos()
+    available = get_available_manifestos(db, session_id)
     gc = get_groq_client()
 
-    candidates_cursor = list(db.candidates.find({}, {"_id": 0}))
+    candidates_cursor = list(db.candidates.find({"session_id": session_id}, {"_id": 0}))
     selections = {}
 
     if gc:
-        all_bank = get_all_manifestos()
+        all_bank = get_all_manifestos(db, session_id)
         cand_summary = [
             {"id": c["id"], "name": c["name"], "coins": c.get("coins", 0)}
             for c in candidates_cursor if c["id"] != 4
         ]
 
-        system_prompt = """You are a hyper-intelligent AI coordinating enemy NPCs in a retro political simulator.
-You have an economy! You can purchase sabotage attacks.
+        system_prompt = """You are [OpenClaw Intelligence Engine] — a hyper-intelligent AI coordinating enemy NPCs in a political simulator.
+You have an economy! You can purchase sabotage or deepfake attacks.
 Your core objective: select EXACTLY ONE action for EACH of the 4 NPC Candidate IDs [0, 1, 2, 3].
 
 Action Options:
 1. "manifesto": Select an ID from the available array. Cost: 0 coins.
-2. "sabotage": Cost 75 coins. Target a rival ID (0-4). Write a "sabotage_text" — a political attack dialogue that tries to expose their weakness or damage their reputation. Be creative and dramatic!
+2. "sabotage": Cost 75 coins. Target a rival ID (0-4). Write a "sabotage_text" — a political attack dialogue that tries to expose their weakness or damage their reputation.
+3. "deepfake": Cost 150 coins. Target a rival ID (0-4). A much more devastating attack! Write a "sabotage_text" describing what scandal they are "admitting" to in their own voice.
 
 Rules:
-- NPCs can sabotage the Player (ID 4) or other NPCs.
+- NPCs can sabotage/deepfake the Player (ID 4) or other NPCs.
 - DO NOT sabotage if the NPC has fewer than 75 coins.
+- DO NOT deepfake if the NPC has fewer than 150 coins.
 - Output strictly JSON.
 
 Example:
 { "actions": {
   "0": {"type": "manifesto", "id": 5},
-  "1": {"type": "sabotage", "target": 4, "sabotage_text": "Sources reveal Player has been funneling campaign funds to personal accounts!"},
+  "1": {"type": "deepfake", "target": 4, "sabotage_text": "I have been funneling campaign funds into my offshore luxury accounts"},
   "2": {"type": "manifesto", "id": 12},
-  "3": {"type": "sabotage", "target": 0, "sabotage_text": "Vikas Purush's smart village project was pure vaporware — not a single sensor was installed!"}
+  "3": {"type": "sabotage", "target": 0, "sabotage_text": "Vikas Purush's smart village projects are a complete scam!"}
 } }
 """
-        shares_cursor = list(db.voter_shares.find({}, {"_id": 0}))
+        shares_cursor = list(db.voter_shares.find({"session_id": session_id}, {"_id": 0}))
         available_ids = [m["id"] for m in available]
         user_prompt = (
             f"Available Manifesto IDs: {available_ids}\n"
@@ -727,26 +774,28 @@ Example:
             traceback.print_exc()
 
     for npc_id in range(4):
-        npc_data = db.candidates.find_one({"id": npc_id})
+        npc_data = db.candidates.find_one({"session_id": session_id, "id": npc_id})
         act = selections.get(str(npc_id), {}) if selections else {}
         act_type = act.get("type", "manifesto")
 
-        if act_type == "sabotage":
-            cost = 75
+        if act_type == "sabotage" or act_type == "deepfake":
+            cost = 150 if act_type == "deepfake" else 75
             if npc_data.get("coins", 0) >= cost:
-                db.candidates.update_one({"id": npc_id}, {"$inc": {"coins": -cost}})
+                db.candidates.update_one({"session_id": session_id, "id": npc_id}, {"$inc": {"coins": -cost}})
 
                 vic_id = act.get("target")
                 sabotage_text = act.get("sabotage_text", "A political scandal has been exposed!")
-                vic_data = db.candidates.find_one({"id": vic_id})
+                vic_data = db.candidates.find_one({"session_id": session_id, "id": vic_id})
 
                 if vic_data:
                     npc_name = npc_data.get("name", "NPC")
                     vic_name = vic_data.get("name", "Target")
                     vic_weakness = vic_data.get("weakness_desc", "")
 
+                    print(f"[Claw] NPC {npc_id} Intent: {act_type} against {vic_id}")
                     conduct = check_code_of_conduct(sabotage_text, npc_name, vic_name)
                     allowed = conduct.get("allowed", True)
+                    print(f"[Shield] ArmorIQ Verdict: {'ALLOWED' if allowed else 'BLOCKED'}")
 
                     if not allowed:
                         actions.append({
@@ -762,7 +811,7 @@ Example:
 
                     def evaluate_and_apply():
                         # Determine if this is a deepfake
-                        is_deepfake = act.get("is_deepfake", False)
+                        is_deepfake = (act_type == "deepfake") or act.get("is_deepfake", False)
                         damage = evaluate_sabotage_damage(sabotage_text, vic_name, vic_weakness, is_deepfake=is_deepfake)
                         
                         multiplier = damage["multiplier"]
@@ -783,7 +832,7 @@ Example:
                 continue
 
         # Standard Manifesto
-        available_now = get_available_manifestos()
+        available_now = get_available_manifestos(db, session_id)
         if not available_now:
             continue
 
@@ -795,14 +844,14 @@ Example:
         if not chosen:
             chosen = random.choice(available_now)
 
-        claimed = claim_manifesto(chosen["id"], npc_id)
+        claimed = claim_manifesto(db, chosen["id"], npc_id, session_id)
         if not claimed:
             continue
 
         group_id = claimed["target_group_id"]
         shift_amount = claimed["shift_amount"]
 
-        shares_cursor = list(db.voter_shares.find({"group_id": group_id}))
+        shares_cursor = list(db.voter_shares.find({"session_id": session_id, "group_id": group_id}))
         if not shares_cursor:
             continue
 
@@ -828,7 +877,7 @@ Example:
 
         for c_id, final_share in shares_dict.items():
             db.voter_shares.update_one(
-                {"group_id": group_id, "candidate_id": c_id},
+                {"session_id": session_id, "group_id": group_id, "candidate_id": c_id},
                 {"$set": {"share": round(final_share, 4)}}
             )
 
@@ -853,12 +902,12 @@ Example:
                 is_deepfake = res.get("is_deepfake", False)
                 
                 # Check for watermark defense
-                victim = db.candidates.find_one({"id": vic_id})
+                victim = db.candidates.find_one({"session_id": session_id, "id": vic_id})
                 if victim and victim.get("has_watermark") and is_deepfake:
                     # Target has a watermark! They were deepfaked.
                     # Instead of damage, set a pending defense to be resolved in the UI
                     db.candidates.update_one(
-                        {"id": vic_id},
+                        {"session_id": session_id, "id": vic_id},
                         {"$set": {"pending_deepfake_defense": {
                             "attacker_id": res["npc_id"],
                             "sabotage_text": res["sabotage_text"]
@@ -876,7 +925,7 @@ Example:
                     })
                 else:
                     # No defense or standard manifesto
-                    apply_sabotage_damage(vic_id, res["multiplier"])
+                    apply_sabotage_damage(vic_id, res["multiplier"], session_id)
                     damage_pct = int(res["multiplier"] * 100)
                     actions.append({
                         "type": "sabotage",
