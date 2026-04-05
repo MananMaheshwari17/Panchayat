@@ -28,6 +28,16 @@ const NPC_CANDIDATES = [
     { id: 3, name: 'Mukti Devi', archetype: 'mukti_devi', emoji: '🕊️', color: '#a048c8', avatar: 'assets/mukti_devi_avatar.png' }
 ];
 
+function getCharacterProfile(id) {
+    if (id === PLAYER_CANDIDATE_ID) {
+        return { name: gameState.candidate.name, emoji: '👤', color: '#f0c040' };
+    }
+    const npc = NPC_CANDIDATES.find(n => n.id === id);
+    if (npc) return npc;
+    return { name: 'Unknown', emoji: '🎤', color: '#999' };
+}
+
+
 // ── Game State (local mirror of DB) ──
 const gameState = {
     candidate: {
@@ -35,7 +45,7 @@ const gameState = {
         name: 'Player',
         party: 'Jan Seva Party',
         popularity: 2,
-        coins: 200,
+        coins: 300,
         level: 1
     },
     manifesto: [],         // Player's chosen manifestos
@@ -47,7 +57,8 @@ const gameState = {
     selectedPopupOptions: [],
     voiceMap: {},          // { candidateId: voice_id } — persisted from server
     isMuted: false,        // Global mute toggle
-    currentAudio: null     // Currently playing Audio object for cancellation
+    currentAudio: null,    // Currently playing Audio object for cancellation
+    hasWatermark: false    // Whether player has voice authentication
 };
 
 // ══════════════════════════════════
@@ -401,6 +412,9 @@ const DOM = {
     sabotageTargetSelect: document.getElementById('sabotageTargetSelect'),
     sabotagePromptInput: document.getElementById('sabotagePromptInput'),
     sabotageSubmitBtn: document.getElementById('sabotageSubmitBtn'),
+    isDeepfakeCheckbox: document.getElementById('isDeepfakeCheckbox'),
+    sabotageSubmitText: document.getElementById('sabotageSubmitText'),
+    buyWatermarkBtn: document.getElementById('buyWatermarkBtn'),
     sabotageResultOverlay: document.getElementById('sabotageResultOverlay'),
     sabotageResultTitle: document.getElementById('sabotageResultTitle'),
     sabotageResultMessage: document.getElementById('sabotageResultMessage'),
@@ -1047,6 +1061,17 @@ function bindEvents() {
         DOM.skipTurnBtn.addEventListener('click', skipTurnAction);
     }
 
+    if (DOM.isDeepfakeCheckbox) {
+        DOM.isDeepfakeCheckbox.addEventListener('change', () => {
+            const isDeepfake = DOM.isDeepfakeCheckbox.checked;
+            DOM.sabotageSubmitText.textContent = isDeepfake ? '🎭 LAUNCH DEEPFAKE (150 🪙)' : '💣 LAUNCH SABOTAGE (75 🪙)';
+        });
+    }
+
+    if (DOM.buyWatermarkBtn) {
+        DOM.buyWatermarkBtn.addEventListener('click', buyWatermarkAction);
+    }
+
     // Hamburger → toggle opponents sidebar
     DOM.menuBtn.addEventListener('click', toggleSidebar);
     DOM.sidebarCloseBtn.addEventListener('click', closeSidebar);
@@ -1322,11 +1347,28 @@ async function animateNpcTurns(npcActions) {
 
             let sabText = `<br><span style="color:#999; font-style:italic; font-size:9px;">"${action.sabotage_text || ''}"</span><br><br>`;
 
-            if (action.blocked) {
+            if (action.is_deepfake) {
+                const isDefended = action.defended;
+                await performAuthCheck(vicName, !isDefended);
+                
+                if (isDefended) {
+                    DOM.announcerAction.innerHTML += sabText + `<span style="color:#48b848; font-size:14px; font-weight:bold;">🛡️ DEFENDED!</span><br><span style="color:#e8a040; font-size:9px;">Deepfake failed to fool authentication! No damage taken.</span>`;
+                } else {
+                    let damagePct = action.multiplier ? Math.round(action.multiplier * 100) : '??';
+                    
+                    // FIXED: Play the victim's voice for the deepfake dialogue ONLY if not defended!
+                    if (action.dialogue && (action.vic_id !== undefined)) {
+                        const profile = getCharacterProfile(action.vic_id);
+                        await showDialoguePopup(profile.name, action.dialogue, profile.emoji, profile.color, action.vic_id);
+                    }
+                    
+                    DOM.announcerAction.innerHTML += sabText + `<span style="color:#e04848; font-size:14px; font-weight:bold;">🎭 DEEPFAKE SUCCESS!</span><br><span style="color:#e04848; font-size:11px;">${vicName} lost ${damagePct}% voter share!</span>`;
+                }
+            } else if (action.blocked) {
                 DOM.announcerAction.innerHTML += sabText + `<span style="color:#48b848; font-size:14px; font-weight:bold;">⚖️ BLOCKED!</span><br><span style="color:#888; font-size:9px;">Election Commissioner: ${action.reason || 'Code of conduct violation'}</span>`;
             } else {
                 let damagePct = action.multiplier ? Math.round(action.multiplier * 100) : '??';
-                DOM.announcerAction.innerHTML += sabText + `<span style="color:#e04848; font-size:14px; font-weight:bold;">💥 SABOTAGE SUCCESS!</span><br><span style="color:#e8a040; font-size:9px;">${action.dialogue || ''}</span><br><span style="color:#e04848; font-size:8px;">${vicName} lost ${damagePct}% voter share!</span>`;
+                DOM.announcerAction.innerHTML += sabText + `<span style="color:#e04848; font-size:14px; font-weight:bold;">💥 SABOTAGE SUCCESS!</span><br><span style="color:#e8a040; font-size:11px;">${action.dialogue || ''}</span><br><span style="color:#e04848; font-size:8px;">${vicName} lost ${damagePct}% voter share!</span>`;
             }
             await sleep(2000);
         }
@@ -1470,10 +1512,11 @@ async function addToCampaign() {
             renderOpponentsSidebar();
 
             // Gain round reward
-            gameState.candidate.coins += 25;
+            // Round reward: 50 coins
+            gameState.candidate.coins += 50;
             localStorage.setItem('playerCoins', gameState.candidate.coins);
             DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
-            setTimeout(() => showToast('🪙', 'Round End! +25 Coins Granted'), 500);
+            setTimeout(() => showToast('🪙', 'Round End! +50 Coins Granted'), 500);
 
             // Track & evaluate turn limit
             gameState.turnNumber++;
@@ -1520,10 +1563,10 @@ async function skipTurnAction() {
     renderBarChart();
     renderOpponentsSidebar();
 
-    gameState.candidate.coins += 25;
+    gameState.candidate.coins += 50;
     localStorage.setItem('playerCoins', gameState.candidate.coins);
     if (DOM.coinCount) DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
-    setTimeout(() => showToast('🪙', 'Round End! +25 Coins Granted'), 500);
+    setTimeout(() => showToast('🪙', 'Round End! +50 Coins Granted'), 500);
 
     gameState.turnNumber++;
     localStorage.setItem('turnNumber', gameState.turnNumber);
@@ -1972,15 +2015,17 @@ function closeSabotagePopup() {
 async function executeSabotage() {
     const targetId = parseInt(DOM.sabotageTargetSelect.value);
     const sabotageText = DOM.sabotagePromptInput.value.trim();
+    const isDeepfake = DOM.isDeepfakeCheckbox ? DOM.isDeepfakeCheckbox.checked : false;
+    const cost = isDeepfake ? 150 : 75;
 
     if (!sabotageText) {
         showToast('❌', 'Write your sabotage attack!');
         return;
     }
 
-    if (gameState.candidate.coins < 75) {
+    if (gameState.candidate.coins < cost) {
         soundManager.play('error_buzz');
-        showToast('❌', 'Not enough coins!');
+        showToast('❌', `Not enough coins! Need ${cost} 🪙`);
         return;
     }
 
@@ -1991,16 +2036,21 @@ async function executeSabotage() {
     try {
         const result = await apiFetch('/api/player-sabotage', {
             method: 'POST',
-            body: JSON.stringify({ target_id: targetId, sabotage_prompt: sabotageText }),
+            body: JSON.stringify({ 
+                target_id: targetId, 
+                sabotage_prompt: sabotageText,
+                is_deepfake: isDeepfake 
+            }),
             timeoutMs: 30000
         });
 
         closeSabotagePopup();
 
         // Deduct coins locally
-        gameState.candidate.coins -= 75;
+        gameState.candidate.coins -= cost;
         localStorage.setItem('playerCoins', gameState.candidate.coins);
         DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+
 
         // Show result popup
         if (result.status === 'blocked') {
@@ -2014,6 +2064,13 @@ async function executeSabotage() {
             DOM.sabotageResultTitle.style.color = '#48b848';
             DOM.sabotageResultMessage.textContent = `${result.target_name} lost ${damagePct}% voter share!`;
             DOM.sabotageResultDialogue.textContent = result.dialogue || '';
+
+            // FIXED: Use showDialoguePopup for Deepfakes to show the visual novel-style box and audio!
+            if (result.is_deepfake && result.dialogue && (result.target_id !== undefined)) {
+                const profile = getCharacterProfile(result.target_id);
+                console.log("Deepfake dialogue trigger:", result.target_id, result.dialogue);
+                await showDialoguePopup(profile.name, result.dialogue, profile.emoji, profile.color, result.target_id);
+            }
         }
         DOM.sabotageResultOverlay.classList.add('active');
 
@@ -2038,10 +2095,11 @@ async function executeSabotage() {
         renderOpponentsSidebar();
 
         // Round reward
-        gameState.candidate.coins += 25;
+        // Round reward: 50 coins
+        gameState.candidate.coins += 50;
         localStorage.setItem('playerCoins', gameState.candidate.coins);
         DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
-        setTimeout(() => showToast('🪙', 'Round End! +25 Coins Granted'), 500);
+        setTimeout(() => showToast('🪙', 'Round End! +50 Coins Granted'), 500);
 
         // Track round
         gameState.turnNumber++;
@@ -2070,6 +2128,60 @@ if (DOM.sabotageSubmitBtn) DOM.sabotageSubmitBtn.addEventListener('click', execu
 if (DOM.sabotageResultCloseBtn) DOM.sabotageResultCloseBtn.addEventListener('click', () => {
     DOM.sabotageResultOverlay.classList.remove('active');
 });
+
+async function buyWatermarkAction() {
+    if (gameState.hasWatermark) {
+        showToast('🛡️', 'Already Authenticated!');
+        return;
+    }
+    if (gameState.candidate.coins < 100) {
+        soundManager.play('error_buzz');
+        showToast('❌', 'Need 100 🪙 for Authentication!');
+        return;
+    }
+
+    try {
+        const res = await apiFetch('/api/buy-watermark', {
+            method: 'POST',
+            body: JSON.stringify({ candidate_id: PLAYER_CANDIDATE_ID })
+        });
+
+        if (res.status === 'success') {
+            gameState.hasWatermark = true;
+            gameState.candidate.coins -= 100;
+            localStorage.setItem('playerCoins', gameState.candidate.coins);
+            DOM.coinCount.textContent = gameState.candidate.coins.toLocaleString();
+            soundManager.play('round_chime');
+            showToast('🛡️', 'VOICE AUTHENTICATED!');
+            if (DOM.buyWatermarkBtn) {
+                DOM.buyWatermarkBtn.innerHTML = '🛡️ AUTHENTICATION ACTIVE';
+                DOM.buyWatermarkBtn.style.opacity = '0.7';
+                DOM.buyWatermarkBtn.style.pointerEvents = 'none';
+            }
+        }
+    } catch (e) {
+        console.error("Purchase failed", e);
+    }
+}
+
+async function performAuthCheck(candidateName, isSuccess) {
+    DOM.turnAnnouncerOverlay.classList.add('active');
+    DOM.announcerName.textContent = "🔍 AUTHENTICITY CHECK";
+    DOM.announcerAction.style.color = "#4088e0";
+    DOM.announcerAction.innerHTML = `Analyzing ${candidateName}'s speech waves...<br><span style="font-size:10px; color:#555;">[Scanning for 19kHz signature]</span>`;
+    
+    await sleep(1500);
+    
+    if (isSuccess) {
+        soundManager.play('round_chime');
+        DOM.announcerAction.innerHTML = `<span style="color:#48b848; font-size:16px;">✅ AUTHENTIC</span><br>Audio contains official watermark.`;
+    } else {
+        soundManager.play('error_buzz');
+        DOM.announcerAction.innerHTML = `<span style="color:#e04848; font-size:16px;">❌ DEEPFAKE DETECTED!</span><br>No digital signature found.`;
+    }
+    
+    await sleep(2000);
+}
 
 
 // ══════════════════════════════════

@@ -17,6 +17,12 @@ from concurrent.futures import ThreadPoolExecutor
 from data.manifesto_bank import get_available_manifestos, claim_manifesto, get_all_manifestos
 from server.init_db import restart_game_state
 
+import io
+import numpy as np
+import subprocess
+from scipy.fft import fft
+import time
+
 # Load env: try server/.env (dev), then root .env (Docker), then rely on system env vars
 env_path = os.path.join(os.path.dirname(__file__), '.env')
 if not os.path.exists(env_path):
@@ -128,14 +134,18 @@ class ManifestoRequest(BaseModel):
 class PlayerWeaknessPayload(BaseModel):
     weakness_desc: str
 
-class PlayerSabotageRequest(BaseModel):
-    target_id: int
-    sabotage_prompt: str
-
 class TTSRequest(BaseModel):
     text: str
     candidate_id: int
     speech_style: Optional[str] = "neutral"
+
+class BuyWatermarkRequest(BaseModel):
+    candidate_id: int
+
+class PlayerSabotageRequest(BaseModel):
+    target_id: int
+    sabotage_prompt: str
+    is_deepfake: bool = False
 
 # ══════════════════════════════════
 #  ARMORIQ ELECTION COMMISSIONER
@@ -217,27 +227,38 @@ def check_code_of_conduct(sabotage_text, attacker_name, target_name):
     return {"allowed": True, "reason": "No judge available — defaulting to allowed."}
 
 
-def evaluate_sabotage_damage(sabotage_text, target_name, target_weakness):
+def evaluate_sabotage_damage(sabotage_text, target_name, target_weakness, is_deepfake=False):
     """
-    Uses Groq to determine how much damage a passed sabotage does (0.1 to 0.5 multiplier).
-    The target's shares are reduced to (1 - multiplier) of original per group.
-    Returns: {"multiplier": float 0.1-0.5, "dialogue": str}
+    Uses Groq to judge the impact of a sabotage. 
+    1. Standard sabotage -> headline in English.
+    2. Deepfake -> shocking admission in HINDI (spoken in target's voice).
     """
     gc = get_groq_client()
     if gc:
         try:
-            prompt = (
-                "You are evaluating a political sabotage in Panchayat elections.\n"
-                "Target candidate: " + target_name + "\n"
-                "Their known weakness: " + target_weakness + "\n"
-                "Sabotage dialogue: " + sabotage_text + "\n\n"
-                "How effective is this sabotage? Rate the damage multiplier:\n"
-                "- 0.1 means 10% of voter share is lost (weak attack)\n"
-                "- 0.5 means 50% of voter share is lost (devastating attack)\n"
-                "The closer the sabotage hits the actual weakness, the higher the damage.\n\n"
-                "Also write a dramatic one-liner headline for the news ticker.\n\n"
-                'Respond STRICTLY in JSON: {"multiplier": 0.1 to 0.5, "dialogue": "dramatic headline"}'
-            )
+            if is_deepfake:
+                prompt = (
+                    "You are generating a shocking political admission in a deepfake attack.\n"
+                    "Target candidate: " + target_name + "\n"
+                    "The fake admission must be about: " + sabotage_text + "\n"
+                    "The text must be in HINDI language (using Devanagari script).\n"
+                    "The text must be in FIRST PERSON (I am/I have) as if " + target_name + " is admitting to a scandal.\n"
+                    "The admission must be highly damaging and dramatic (1-2 sentences).\n\n"
+                    'Respond STRICTLY in JSON: {"multiplier": 0.4 to 0.75, "dialogue": "शॉकिंग हिंदी बयान"}'
+                )
+            else:
+                prompt = (
+                    "You are evaluating a political sabotage in Panchayat elections.\n"
+                    "Target candidate: " + target_name + "\n"
+                    "Their known weakness: " + target_weakness + "\n"
+                    "Sabotage dialogue: " + sabotage_text + "\n\n"
+                    "How effective is this sabotage? Rate the damage multiplier:\n"
+                    "- 0.1 means 10% of voter share is lost (weak attack)\n"
+                    "- 0.5 means 50% of voter share is lost (devastating attack)\n"
+                    "The closer the sabotage hits the actual weakness, the higher the damage.\n\n"
+                    "Also write a dramatic one-liner headline for the news ticker.\n\n"
+                    'Respond STRICTLY in JSON: {"multiplier": 0.1 to 0.5, "dialogue": "dramatic headline"}'
+                )
             comp = gc.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="llama-3.1-8b-instant",
@@ -245,7 +266,12 @@ def evaluate_sabotage_damage(sabotage_text, target_name, target_weakness):
                 response_format={"type": "json_object"}
             )
             result = json.loads(comp.choices[0].message.content)
-            mult = max(0.1, min(0.5, float(result.get("multiplier", 0.1))))
+            
+            # Cap multiplier based on deepfake flag
+            max_mult = 0.75 if is_deepfake else 0.5
+            min_mult = 0.4 if is_deepfake else 0.1
+            
+            mult = max(min_mult, min(max_mult, float(result.get("multiplier", min_mult))))
             return {"multiplier": mult, "dialogue": result.get("dialogue", "A scandal has surfaced!")}
         except Exception as e:
             print(f"Groq damage eval error: {e}")
@@ -377,6 +403,120 @@ async def get_candidates_info():
     return candidates
 
 
+def inject_audio_watermark(audio_bytes: bytes) -> bytes:
+    """
+    Injects an inaudible 19kHz sine wave watermark into the audio using FFmpeg and NumPy.
+    Works independently of PyDub by piping through FFmpeg for decoding/encoding.
+    """
+    try:
+        # Step 1: Decode MP3 bytes to raw PCM using FFmpeg
+        # s16le = signed 16-bit little-endian, ac 1 = mono, ar 44100 = sample rate
+        process = subprocess.Popen(
+            ["ffmpeg", "-i", "pipe:0", "-f", "s16le", "-ac", "1", "-ar", "44100", "pipe:1"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = process.communicate(input=audio_bytes)
+        
+        if process.returncode != 0:
+            logger.error(f"FFmpeg decoding failed: {stderr.decode()}")
+            return audio_bytes
+
+        # Step 2: Add 19kHz sine wave using NumPy
+        pcm_data = np.frombuffer(stdout, dtype=np.int16).astype(np.float32)
+        sample_rate = 44100
+        duration_sec = len(pcm_data) / sample_rate
+        frequency = 19000
+        
+        t = np.linspace(0, duration_sec, len(pcm_data), False)
+        sine_wave = np.sin(frequency * 2 * np.pi * t)
+        
+        # Overlay at low volume (-25dB approximately corresponds to 0.05 amplitude)
+        # Scaling PCM to float (-1.0 to 1.0) for easier manipulation
+        pcm_normalized = pcm_data / 32768.0
+        watermarked_float = pcm_normalized + (sine_wave * 0.05)
+        
+        # Clip and convert back to int16
+        watermarked_pcm = (np.clip(watermarked_float, -1.0, 1.0) * 32767).astype(np.int16)
+
+        # Step 3: Re-encode PCM back to MP3 using FFmpeg
+        process = subprocess.Popen(
+            ["ffmpeg", "-f", "s16le", "-ac", "1", "-ar", "44100", "-i", "pipe:0", "-f", "mp3", "-ac", "1", "-ab", "128k", "pipe:1"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        final_audio, stderr = process.communicate(input=watermarked_pcm.tobytes())
+        
+        if process.returncode != 0:
+            logger.error(f"FFmpeg encoding failed: {stderr.decode()}")
+            return audio_bytes
+            
+        return final_audio
+    except Exception as e:
+        logger.error(f"Watermark injection failed: {e}")
+        return audio_bytes
+
+def has_valid_watermark(audio_bytes: bytes) -> bool:
+    """
+    Verifies the existence of 19kHz watermark using FFT on decoded PCM.
+    """
+    try:
+        # Step 1: Decode MP3 bytes to raw PCM using FFmpeg
+        process = subprocess.Popen(
+            ["ffmpeg", "-i", "pipe:0", "-f", "s16le", "-ac", "1", "-ar", "44100", "pipe:1"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = process.communicate(input=audio_bytes)
+        if process.returncode != 0:
+            return False
+
+        samples = np.frombuffer(stdout, dtype=np.int16)
+        if len(samples) < 4096:
+            return False
+        
+        # Take a slice from the middle
+        start_idx = len(samples) // 4
+        end_idx = 3 * len(samples) // 4
+        sample_slice = samples[start_idx:end_idx]
+        
+        # FFT to find frequency energy
+        n = len(sample_slice)
+        yf = fft(sample_slice)
+        xf = np.fft.fftfreq(n, 1 / 44100)
+        
+        # Look for energy peaks specifically between 18.9kHz and 19.1kHz
+        idx = np.where((xf > 18900) & (xf < 19100))
+        magnitude = np.abs(yf[idx])
+        
+        if len(magnitude) == 0:
+            return False
+            
+        peak_val = np.max(magnitude)
+        # Threshold for detection
+        return peak_val > 1000 
+    except Exception as e:
+        logger.error(f"Watermark verification failed: {e}")
+        return False
+
+@app.post("/api/buy-watermark")
+async def buy_watermark(req: BuyWatermarkRequest):
+    cand = db.candidates.find_one({"id": req.candidate_id})
+    if not cand:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    if cand.get("coins", 0) < 100:
+        raise HTTPException(status_code=400, detail="Insufficient coins")
+    
+    db.candidates.update_one(
+        {"id": req.candidate_id},
+        {"$inc": {"coins": -100}, "$set": {"has_watermark": True}}
+    )
+    return {"status": "success", "message": "Voice watermark purchased!"}
+
 # ══════════════════════════════════
 #  ELEVENLABS TTS ENDPOINT
 # ══════════════════════════════════
@@ -495,7 +635,7 @@ async def player_sabotage(req: PlayerSabotageRequest):
         }
 
     # Step 2: Groq evaluates damage
-    damage = evaluate_sabotage_damage(req.sabotage_prompt, target_name, target_weakness)
+    damage = evaluate_sabotage_damage(req.sabotage_prompt, target_name, target_weakness, is_deepfake=req.is_deepfake)
     multiplier = damage["multiplier"]
     dialogue = damage["dialogue"]
 
@@ -509,6 +649,8 @@ async def player_sabotage(req: PlayerSabotageRequest):
         "multiplier": multiplier,
         "target_id": req.target_id,
         "target_name": target_name,
+        "target_voice_id": target.get("voice_id", CHARACTER_VOICES.get(req.target_id, "")),
+        "is_deepfake": req.is_deepfake,
         "sabotage_text": req.sabotage_prompt
     }
 
@@ -519,6 +661,9 @@ async def player_sabotage(req: PlayerSabotageRequest):
 
 @app.post("/api/end-turn")
 async def end_turn():
+    # Grant each candidate +50 coins per round
+    db.candidates.update_many({}, {"$inc": {"coins": 50}})
+    
     actions = []
     available = get_available_manifestos()
     gc = get_groq_client()
@@ -616,14 +761,21 @@ Example:
                         continue
 
                     def evaluate_and_apply():
-                        damage = evaluate_sabotage_damage(sabotage_text, vic_name, vic_weakness)
+                        # Determine if this is a deepfake
+                        is_deepfake = act.get("is_deepfake", False)
+                        damage = evaluate_sabotage_damage(sabotage_text, vic_name, vic_weakness, is_deepfake=is_deepfake)
+                        
+                        multiplier = damage["multiplier"]
+                        
                         return {
                             "npc_id": npc_id,
                             "vic_id": vic_id,
-                            "multiplier": damage["multiplier"],
+                            "vic_voice_id": vic_data.get("voice_id", CHARACTER_VOICES.get(vic_id, "")),
+                            "multiplier": multiplier,
                             "dialogue": damage["dialogue"],
                             "sabotage_text": sabotage_text,
-                            "vic_name": vic_name
+                            "vic_name": vic_name,
+                            "is_deepfake": is_deepfake
                         }
                     
                     # Store lambda for grouped future execution
@@ -697,18 +849,46 @@ Example:
         with ThreadPoolExecutor(max_workers=4) as executor:
             results = list(executor.map(lambda fn: fn(), sabotage_tasks))
             for res in results:
-                apply_sabotage_damage(res["vic_id"], res["multiplier"])
-                damage_pct = int(res["multiplier"] * 100)
-                actions.append({
-                    "type": "sabotage",
-                    "candidate_id": res["npc_id"],
-                    "target_id": res["vic_id"],
-                    "sabotage_text": res["sabotage_text"],
-                    "blocked": False,
-                    "multiplier": res["multiplier"],
-                    "dialogue": res["dialogue"],
-                    "message": f"SABOTAGE! {res['vic_name']} lost {damage_pct}% voter share!"
-                })
+                vic_id = res["vic_id"]
+                is_deepfake = res.get("is_deepfake", False)
+                
+                # Check for watermark defense
+                victim = db.candidates.find_one({"id": vic_id})
+                if victim and victim.get("has_watermark") and is_deepfake:
+                    # Target has a watermark! They were deepfaked.
+                    # Instead of damage, set a pending defense to be resolved in the UI
+                    db.candidates.update_one(
+                        {"id": vic_id},
+                        {"$set": {"pending_deepfake_defense": {
+                            "attacker_id": res["npc_id"],
+                            "sabotage_text": res["sabotage_text"]
+                        }}}
+                    )
+                    actions.append({
+                        "type": "sabotage",
+                        "candidate_id": res["npc_id"],
+                        "target_id": vic_id,
+                        "sabotage_text": res["sabotage_text"],
+                        "blocked": False, # Still "happens" but defense will trigger
+                        "is_deepfake": True,
+                        "defended": True,
+                        "message": f"SABOTAGE ATTEMPT! {res['vic_name']} is checking voice authenticity..."
+                    })
+                else:
+                    # No defense or standard manifesto
+                    apply_sabotage_damage(vic_id, res["multiplier"])
+                    damage_pct = int(res["multiplier"] * 100)
+                    actions.append({
+                        "type": "sabotage",
+                        "candidate_id": res["npc_id"],
+                        "target_id": vic_id,
+                        "sabotage_text": res["sabotage_text"],
+                        "blocked": False,
+                        "multiplier": res["multiplier"],
+                        "dialogue": res["dialogue"],
+                        "is_deepfake": is_deepfake,
+                        "message": f"SABOTAGE! {res['vic_name']} lost {damage_pct}% voter share!"
+                    })
 
     return {"status": "success", "npc_actions": actions}
 

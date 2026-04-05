@@ -73,7 +73,7 @@
         <div class="topbar-right">
             <div class="coin-badge">
                 <span class="coin-icon">🪙</span>
-                <span class="coin-count" id="coinCount">1,250</span>
+                <span class="coin-count" id="coinCount">300</span>
             </div>
             <button class="coc-btn" id="cocBtn" title="Code of Conduct">⚖️ CoC</button>
             <button class="settings-btn" id="muteBtn" title="Toggle Sound">🔊</button>
@@ -118,7 +118,12 @@
                             <span class="pstar">♥</span>
                             <span class="pstar">♥</span>
                             <span class="pstar">♥</span>
-                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button id="buyWatermarkBtn" class="add-manifesto-btn" 
+                            style="width: 100%; position: static; height: 35px; background: linear-gradient(180deg, #4088e0 0%, #2060b0 100%); box-shadow: 0 4px 0 #104080; font-size: 8px; border: 2px solid #fff;">
+                            🛡️ VOICE AUTHENTICITY (100 🪙)
+                        </button>
                     </div>
                 </div>
             </div>
@@ -218,8 +223,16 @@
                     YOUR SABOTAGE DIALOGUE:</label>
                 <textarea id="sabotagePromptInput"
                     style="width: 100%; padding: 10px; font-family: 'Press Start 2P'; font-size: 9px; background: #181818; color: #fff; border: 2px solid #585858; outline: none; resize: vertical; min-height: 80px;"
-                    placeholder="Write your political attack here... Be strategic! The closer you hit their real weakness, the more damage you deal."
+                    placeholder="Write your political attack here..."
                     rows="4"></textarea>
+            </div>
+
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: #280000; padding: 10px; border: 1px solid #c03030; border-radius: 4px;">
+                <input type="checkbox" id="isDeepfakeCheckbox" style="cursor: pointer; width: 18px; height: 18px;">
+                <label for="isDeepfakeCheckbox" style="font-family: 'Press Start 2P'; font-size: 7px; color: #ff6060; cursor: pointer; line-height: 1.4;">
+                    🎭 LAUNCH DEEPFAKE (150 🪙)<br>
+                    <span style="font-size: 6px; color: #aaa;">Generates AI audio in target's voice. -40 to -75% damage!</span>
+                </label>
             </div>
 
             <p
@@ -230,7 +243,7 @@
 
             <button class="popup-action-btn" id="sabotageSubmitBtn"
                 style="background: #c03030; box-shadow: 0 4px 0 #801818;">
-                <span class="popup-action-text">💣 LAUNCH SABOTAGE</span>
+                <span class="popup-action-text" id="sabotageSubmitText">💣 LAUNCH SABOTAGE (75 🪙)</span>
             </button>
         </div>
     </div>
